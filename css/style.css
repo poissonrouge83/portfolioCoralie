@@ -158,7 +158,7 @@ p {
   align-items: center;
   padding: 0 9%;
   margin-top: 20px;
-  background: url("img/moi.png") no-repeat;
+  background: url("../img/moi.png") no-repeat;
   background-size: 25%;
   background-position: 85%;
 }
