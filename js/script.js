@@ -60,6 +60,9 @@ document.addEventListener("mousemove", (e) => {
 //
 //
 //
+//
+//
+//
 
 // /* CHAOS EXPLODE  */
 // On dit à GSAP qu'on va utiliser le plugin ScrollTrigger
@@ -146,27 +149,32 @@ explodeTexts.forEach((text) => {
 //
 //
 //
+//
+//
+//
+//
+//
 //////////////
 // Animation projet
 const track = document.querySelector(".projects-track");
 const wrapper = document.querySelector(".projects-wrapper");
 
-// duplique les images pour la boucle infinie
+// Duplique les images pour la boucle infinie
 track.innerHTML += track.innerHTML;
 
 let isDown = false;
 let startX;
-let autoScrollTimer; // timer pour relancer l'auto-scroll
+let autoScrollTimer;
 
-// animation GSAP auto-scroll
+// Animation GSAP auto-scroll
 const autoScroll = gsap.to(track, {
   x: "-50%",
-  duration: 40,
+  duration: 50,
   ease: "none",
   repeat: -1,
 });
 
-// fonction pour relancer l'auto-scroll après X ms
+// Fonction pour relancer l'auto-scroll après X ms
 function restartAutoScroll(delay = 60000) {
   clearTimeout(autoScrollTimer);
   autoScrollTimer = setTimeout(() => {
@@ -174,14 +182,14 @@ function restartAutoScroll(delay = 60000) {
   }, delay);
 }
 
-// drag avec souris / doigt
+// Drag avec souris / doigt
 wrapper.addEventListener("pointerdown", (e) => {
   isDown = true;
 
-  autoScroll.pause(); // stoppe immédiatement
-  clearTimeout(autoScrollTimer); // annule le timer si existant
+  autoScroll.pause(); // Stoppe l'auto-scroll
+  clearTimeout(autoScrollTimer);
 
-  startX = e.clientX;
+  startX = e.clientX; // clientX fonctionne aussi sur mobile
   wrapper.style.cursor = "grabbing";
 });
 
@@ -190,21 +198,20 @@ wrapper.addEventListener("pointermove", (e) => {
   e.preventDefault();
 
   const x = e.clientX;
-  const walk = x - startX;
-
+  const walk = (x - startX) * 1.5; // vitesse du drag
   gsap.to(track, {
     x: `+=${walk}px`,
-    duration: 0, // instant
+    duration: 0,
   });
 
-  startX = x;
+  startX = x; // mise à jour pour la prochaine frame
 });
 
 wrapper.addEventListener("pointerup", () => {
   isDown = false;
   wrapper.style.cursor = "grab";
 
-  restartAutoScroll(); // relance l'animation après 1 min
+  restartAutoScroll(); // relance l'auto-scroll après 1 min
 });
 
 wrapper.addEventListener("pointerleave", () => {
@@ -212,8 +219,13 @@ wrapper.addEventListener("pointerleave", () => {
   isDown = false;
   wrapper.style.cursor = "grab";
 
-  restartAutoScroll(); // relance l'animation après 1 min
+  restartAutoScroll();
 });
+
+//
+//
+//
+//
 //
 //
 //
@@ -222,64 +234,6 @@ wrapper.addEventListener("pointerleave", () => {
 //
 // Animation d’apparition des skills
 //
-// const skillCards = document.querySelectorAll(".skill-card");
-
-// skillCards.forEach((card) => {
-//   const circle = card.querySelector(".skill-circle");
-//   const percent = card.dataset.level;
-//   const percentText = card.querySelector(".skill-percent");
-
-//   card.addEventListener("mouseenter", () => {
-//     let current = 0;
-//     let interval = setInterval(() => {
-//       if (current >= percent) {
-//         clearInterval(interval);
-//       } else {
-//         current++;
-//         percentText.textContent = current + "%";
-//         circle.style.background = `conic-gradient(var(--main-color) ${current * 3.6}deg, rgba(255,255,255,0.1) ${current * 3.6}deg)`;
-//       }
-//     }, 15);
-//   });
-
-//   // reset si tu veux que ça reparte à 0 au mouse leave
-//   card.addEventListener("mouseleave", () => {
-//     percentText.textContent = "0%";
-//     circle.style.background = `conic-gradient(var(--main-color) 0deg, rgba(255,255,255,0.1) 0deg)`;
-//   });
-// });
-// JS pour animations au scroll avec GSAP
-
-// ================= SKILLS - CAMEMBERT =================
-// document.querySelectorAll(".skill-card").forEach((card) => {
-//   const circle = card.querySelector(".skill-circle");
-//   const percent = card.querySelector(".skill-percent");
-//   const level = card.dataset.level;
-
-//   gsap.fromTo(
-//     circle,
-//     {
-//       background:
-//         "conic-gradient(var(--main-color) 0deg, rgba(255,255,255,0.1) 0deg)",
-//     },
-//     {
-//       background: `conic-gradient(var(--main-color) ${level * 3.6}deg, rgba(255,255,255,0.1) 0deg)`,
-//       duration: 1.5,
-//       ease: "power1.out",
-//       scrollTrigger: {
-//         trigger: card,
-//         start: "top 80%", // déclenche quand le haut de la carte touche 80% du viewport
-//       },
-//       onUpdate: () => {
-//         const deg = gsap.getProperty(circle, "background");
-//         let current = Math.round(
-//           parseFloat(level) * gsap.getProperty(circle, "progress") || 0,
-//         );
-//         percent.textContent = `${current}%`;
-//       },
-//     },
-//   );
-// });
 function animateSkill(card) {
   const circle = card.querySelector(".skill-circle");
   const percent = card.querySelector(".skill-percent");

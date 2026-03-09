@@ -104,17 +104,10 @@ p {
   transition: all 0.4s ease;
 }
 
-.header.sticky {
-  /* background: var(--bg-color); */
-  /* background-color: transparent;
-  backdrop-filter: blur(12px);
-  transition: all 0.4s ease; */
-}
-
 .logo {
   position: relative;
   font-size: 2.5rem;
-  color: var(--text-color);
+  color: var(--title-color);
   font-weight: 600;
 }
 
@@ -138,7 +131,7 @@ p {
 #menu-icon {
   position: relative;
   font-size: 3.6rem;
-  color: var(--text-color);
+  color: var(--title-color);
   cursor: pointer;
   display: none;
 }
@@ -158,6 +151,10 @@ p {
 .home-content {
   max-width: 60rem;
   z-index: 99;
+}
+
+.moi {
+  display: none;
 }
 
 .home-content h1 {
@@ -358,10 +355,6 @@ p {
 /* ======================= */
 /* SKILLS SECTION */
 /* ======================= */
-/* .skills-section {
-  padding: 120px 10%;
-  text-align: center;
-} */
 
 .section-title {
   margin-bottom: 40px;
@@ -468,6 +461,8 @@ p {
 .projects-wrapper {
   width: 100%;
   overflow: hidden;
+  touch-action: pan-y;
+
   cursor: grab;
 }
 .projects-wrapper:active {
@@ -498,25 +493,6 @@ p {
   transform: scale(1.05);
   filter: brightness(1.1) drop-shadow(0 0 1rem var(--main-color));
 }
-/* .projects::before,
-.projects::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 120px;
-  height: 100%;
-  z-index: 2;
-}
-
-.projects::before {
-  left: 0;
-  background: linear-gradient(to right, var(--text-color), transparent);
-}
-
-.projects::after {
-  right: 0;
-  background: linear-gradient(to left, var(--text-color), transparent);
-} */
 
 /* ANIMATION RELOAD AND SCROLL */
 .animate {
@@ -757,6 +733,12 @@ p {
 
   .home {
     background: none;
+  }
+
+  .moi {
+    display: block;
+    width: 30%;
+    height: 30%;
   }
 
   .home-imgHover {
