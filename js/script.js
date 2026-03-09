@@ -215,7 +215,6 @@ ScrollTrigger.create({
   start: "center -70%", // quand le haut de la section atteint le bas de l'écran
   onEnter: () => sliderTimeline.play(), // joue l'animation au scroll
   once: true, // ne déclenche qu'une seule fois
-  markers: true,
 });
 // force GSAP à recalculer les positions
 ScrollTrigger.refresh();

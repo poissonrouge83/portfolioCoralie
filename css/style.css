@@ -143,7 +143,7 @@ p {
   align-items: center;
   padding: 0 9%;
   margin-top: 20px;
-  background: url("../img/moi.png") no-repeat;
+  background: url("../img/moi-orange.png") no-repeat;
   background-size: 25%;
   background-position: 85%;
 }
@@ -737,8 +737,9 @@ p {
 
   .moi {
     display: block;
-    width: 30%;
-    height: 30%;
+    width: 40%;
+    height: 40%;
+    padding-bottom: 4rem;
   }
 
   .home-imgHover {
@@ -816,11 +817,18 @@ p {
 }
 
 @media (max-width: 462px) {
+  .home {
+    margin-top: 0;
+  }
   .home-content h1 {
-    font-size: 5.2rem;
+    font-size: 5rem;
   }
   h2 {
     font-size: 2.4rem;
+  }
+  .moi {
+    margin-left: auto;
+    margin-right: auto;
   }
   .txt-chaos {
     font-size: 1.6rem; /* cohérent avec ton p global */
