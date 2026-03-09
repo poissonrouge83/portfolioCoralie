@@ -67,14 +67,6 @@ h2 {
   }
 }
 
-.chaos {
-  width: 70%;
-  height: auto;
-  align-items: left;
-  flex-direction: column;
-  position: relative;
-}
-
 .chaos h2 {
   margin-bottom: 4rem;
 }
@@ -87,7 +79,7 @@ h2 {
 
 section {
   /* min-height: 100vh; */
-  padding: 10rem 4% 2rem;
+  padding: 4rem 4% 4rem;
 }
 
 p {
@@ -332,12 +324,23 @@ p {
 
 /* A PROPOS */
 /* **************** */
+.about {
+  background-color: var(--text-color);
+  box-shadow: 0 0 8px var(--main-color);
+}
+.chaos {
+  width: 70%;
+  height: auto;
+  align-items: left;
+  flex-direction: column;
+  position: relative;
+}
 .txt-chaos {
   max-width: 75rem;
   font-size: 2rem; /* cohérent avec ton p global */
   line-height: 1.8;
-  margin-top: 2rem;
-  color: var(--text-color);
+  /* margin-top: 2rem; */
+  color: var(--main-color);
   font-weight: 400;
   border-left: 3px solid var(--main-color);
   padding-left: 2rem;
@@ -348,7 +351,7 @@ p {
   font-size: 2.4rem; /* plus grand mais cohérent */
   font-weight: 600;
   /* margin: 2rem 0; */
-  color: var(--text-color);
+  color: var(--main-color);
   letter-spacing: 0.5px;
 }
 
@@ -447,147 +450,73 @@ p {
 }
 
 .skill-percent {
-  font-size: 1.4rem;
-  font-weight: 600;
+  /* font-size: 1.4rem;
+  font-weight: 600; */
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
   color: var(--text-color);
 }
 /*  PORJETS */
 /************/
 .projects {
-  padding: 10rem 4%;
-  min-height: 100vh;
-}
-
-.projects h2 {
-  text-align: left; /* on garde cohérence avec la home */
-  margin-bottom: 5rem;
-}
-
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
-  gap: 4rem;
-}
-
-.project-card {
-  position: relative;
+  background-color: var(--text-color);
+  box-shadow: 0 0 8px var(--main-color);
   overflow: hidden;
-  border-radius: 1rem;
-  cursor: pointer;
-  transform: translateY(40px);
-  opacity: 0;
-  transition:
-    transform 0.6s ease,
-    opacity 0.6s ease;
-  display: flex;
-  flex-direction: column;
 }
 
-.project-card img {
+.projects-wrapper {
   width: 100%;
-  height: 20rem; /* tu peux ajuster selon ton design */
-  object-fit: cover; /* IMPORTANT : recadre l'image sans la déformer */
-  display: block;
-  transition:
-    transform 0.5s ease,
-    filter 0.5s ease;
-  border-radius: 1rem; /* applique toujours le border-radius */
+  overflow: hidden;
+  cursor: grab;
+}
+.projects-wrapper:active {
+  cursor: grabbing;
 }
 
-.project-card:hover img {
-  transform: scale(1.05);
-  filter: brightness(1.2) drop-shadow(0 0 1rem var(--main-color));
-}
-
-.project-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding: 2rem;
-  background: rgba(0, 0, 0, 0.4);
-  width: 100%;
-  color: var(--text-color);
-  transform: translateY(100%);
-  transition: transform 0.5s ease;
-}
-
-.project-card:hover .project-info {
-  transform: translateY(0);
-}
-
-.project-info h3 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-.project-info p {
-  font-size: 1.5rem;
-}
-.see-more-btn {
-  margin-top: 1rem;
-  padding: 0.8rem 1.6rem;
-  font-size: 1.4rem;
-  color: var(--text-color);
-  background: var(--main-color);
-  border: none;
-  border-radius: 0.8rem;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-
-.see-more-btn:hover {
-  background: var(--bg-color);
-  color: var(--main-color);
-}
-
-/* Slider overlay */
-.project-slider-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.85);
+.projects-track {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 200;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.4s ease;
+  gap: 3rem;
+  width: max-content;
 }
 
-.project-slider-overlay.active {
-  opacity: 1;
-  visibility: visible;
-}
+.projects-track img {
+  width: 35rem;
+  height: 22rem;
 
-.project-slider {
-  width: 80%;
-  max-width: 90rem;
-  background: #111;
-  border-radius: 1rem;
-  padding: 2rem;
-  display: flex;
-  gap: 2rem;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-}
-
-.project-slider img {
-  height: 30rem;
   object-fit: cover;
+
   border-radius: 1rem;
+
+  user-select: none;
+  pointer-events: none;
+
+  transition: transform 0.4s ease;
 }
 
-.close-slider {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  font-size: 3rem;
-  color: var(--text-color);
-  cursor: pointer;
+.projects-track img:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1) drop-shadow(0 0 1rem var(--main-color));
 }
+/* .projects::before,
+.projects::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 120px;
+  height: 100%;
+  z-index: 2;
+}
+
+.projects::before {
+  left: 0;
+  background: linear-gradient(to right, var(--text-color), transparent);
+}
+
+.projects::after {
+  right: 0;
+  background: linear-gradient(to left, var(--text-color), transparent);
+} */
 
 /* ANIMATION RELOAD AND SCROLL */
 .animate {
@@ -761,10 +690,6 @@ p {
     padding: 2rem 4%;
   }
 
-  section {
-    padding: 10rem 4% 2rem;
-  }
-
   .home {
     padding: 0 4%;
   }
@@ -894,6 +819,9 @@ p {
     display: flex;
     flex-direction: column;
   }
+  .chaos {
+    width: 90%;
+  }
 
   .home-sci {
     width: 160px;
@@ -911,6 +839,13 @@ p {
   }
   h2 {
     font-size: 2.4rem;
+  }
+  .txt-chaos {
+    font-size: 1.6rem; /* cohérent avec ton p global */
+  }
+
+  .txt-chaos .highlight {
+    font-size: 2rem; /* plus grand mais cohérent */
   }
 }
 

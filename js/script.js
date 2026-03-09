@@ -147,78 +147,73 @@ explodeTexts.forEach((text) => {
 //
 //
 //////////////
-// Animation de fade-in au scroll pour chaque projet
-gsap.utils.toArray(".project-card").forEach((card) => {
-  gsap.to(card, {
-    scrollTrigger: {
-      trigger: card,
-      start: "top 80%", // quand la carte arrive dans la fenêtre
-    },
-    y: 0,
-    opacity: 1,
-    duration: 0.8,
-    ease: "power2.out",
+// Animation projet
+const track = document.querySelector(".projects-track");
+const wrapper = document.querySelector(".projects-wrapper");
+
+// duplique les images pour la boucle infinie
+track.innerHTML += track.innerHTML;
+
+let isDown = false;
+let startX;
+let autoScrollTimer; // timer pour relancer l'auto-scroll
+
+// animation GSAP auto-scroll
+const autoScroll = gsap.to(track, {
+  x: "-50%",
+  duration: 40,
+  ease: "none",
+  repeat: -1,
+});
+
+// fonction pour relancer l'auto-scroll après X ms
+function restartAutoScroll(delay = 60000) {
+  clearTimeout(autoScrollTimer);
+  autoScrollTimer = setTimeout(() => {
+    autoScroll.resume();
+  }, delay);
+}
+
+// drag avec souris / doigt
+wrapper.addEventListener("pointerdown", (e) => {
+  isDown = true;
+
+  autoScroll.pause(); // stoppe immédiatement
+  clearTimeout(autoScrollTimer); // annule le timer si existant
+
+  startX = e.clientX;
+  wrapper.style.cursor = "grabbing";
+});
+
+wrapper.addEventListener("pointermove", (e) => {
+  if (!isDown) return;
+  e.preventDefault();
+
+  const x = e.clientX;
+  const walk = x - startX;
+
+  gsap.to(track, {
+    x: `+=${walk}px`,
+    duration: 0, // instant
   });
+
+  startX = x;
 });
 
-// 1️⃣ On récupère tous les boutons "Voir plus"
-const seeMoreBtns = document.querySelectorAll(".see-more-btn");
+wrapper.addEventListener("pointerup", () => {
+  isDown = false;
+  wrapper.style.cursor = "grab";
 
-// 2️⃣ On crée une div pour le slider qui sera affichée au clic
-const sliderOverlay = document.createElement("div");
-sliderOverlay.classList.add("project-slider-overlay");
-document.body.appendChild(sliderOverlay);
-
-// On ajoute le slider et un bouton de fermeture
-sliderOverlay.innerHTML = `
-  <span class="close-slider">&times;</span>
-  <div class="project-slider"></div>
-`;
-
-const sliderContainer = sliderOverlay.querySelector(".project-slider");
-const closeBtn = sliderOverlay.querySelector(".close-slider");
-
-// 3️⃣ On définit les images par projet
-const projectImages = {
-  0: ["img/nu-screen.png", "img/flyer-recto.png", "img/flyer-verso.png"],
-
-  1: ["img/ko.png", "img/ko-detail.png", "img/ko-mockup.png"],
-
-  2: ["img/site.png", "img/site-mobile.png", "img/site-ui.png"],
-};
-
-// 🔹 2️⃣ On attache les images au bon bouton
-seeMoreBtns.forEach((btn, index) => {
-  btn.addEventListener("click", () => {
-    sliderContainer.innerHTML = "";
-
-    const images = projectImages[index];
-
-    if (!images) return;
-
-    images.forEach((src) => {
-      const img = document.createElement("img");
-      img.src = src;
-      sliderContainer.appendChild(img);
-    });
-
-    sliderOverlay.classList.add("active");
-  });
+  restartAutoScroll(); // relance l'animation après 1 min
 });
 
-// 4️⃣ Fermer le slider
-closeBtn.addEventListener("click", () => {
-  sliderOverlay.classList.remove("active");
-});
+wrapper.addEventListener("pointerleave", () => {
+  if (!isDown) return;
+  isDown = false;
+  wrapper.style.cursor = "grab";
 
-// 5️⃣ Fermer si on clique en dehors du slider
-sliderOverlay.addEventListener("click", (e) => {
-  if (e.target === sliderOverlay) {
-    sliderOverlay.classList.remove("active");
-  }
+  restartAutoScroll(); // relance l'animation après 1 min
 });
-//
-//
 //
 //
 //
@@ -226,63 +221,103 @@ sliderOverlay.addEventListener("click", (e) => {
 //
 //
 // Animation d’apparition des skills
+//
 // const skillCards = document.querySelectorAll(".skill-card");
 
-// const observer = new IntersectionObserver(
-//   (entries) => {
-//     entries.forEach((entry) => {
-//       if (entry.isIntersecting) {
-//         const card = entry.target;
-//         const level = card.getAttribute("data-level");
-//         const circle = card.querySelector(".skill-circle");
-//         const percentText = card.querySelector(".skill-percent");
+// skillCards.forEach((card) => {
+//   const circle = card.querySelector(".skill-circle");
+//   const percent = card.dataset.level;
+//   const percentText = card.querySelector(".skill-percent");
 
-//         let current = 0;
-//         const interval = setInterval(() => {
-//           if (current >= level) {
-//             clearInterval(interval);
-//           } else {
-//             current++;
-//             percentText.textContent = current + "%";
-//             circle.style.background = `conic-gradient(var(--main-color) ${current * 3.6}deg, rgba(255,255,255,0.1) 0deg)`;
-//           }
-//         }, 15);
-
-//         observer.unobserve(card);
+//   card.addEventListener("mouseenter", () => {
+//     let current = 0;
+//     let interval = setInterval(() => {
+//       if (current >= percent) {
+//         clearInterval(interval);
+//       } else {
+//         current++;
+//         percentText.textContent = current + "%";
+//         circle.style.background = `conic-gradient(var(--main-color) ${current * 3.6}deg, rgba(255,255,255,0.1) ${current * 3.6}deg)`;
 //       }
-//     });
-//   },
-//   { threshold: 0.5 },
-// );
+//     }, 15);
+//   });
 
-// skillCards.forEach((card) => observer.observe(card));
-// Animation camembert au hover
-const skillCards = document.querySelectorAll(".skill-card");
+//   // reset si tu veux que ça reparte à 0 au mouse leave
+//   card.addEventListener("mouseleave", () => {
+//     percentText.textContent = "0%";
+//     circle.style.background = `conic-gradient(var(--main-color) 0deg, rgba(255,255,255,0.1) 0deg)`;
+//   });
+// });
+// JS pour animations au scroll avec GSAP
 
-skillCards.forEach((card) => {
+// ================= SKILLS - CAMEMBERT =================
+// document.querySelectorAll(".skill-card").forEach((card) => {
+//   const circle = card.querySelector(".skill-circle");
+//   const percent = card.querySelector(".skill-percent");
+//   const level = card.dataset.level;
+
+//   gsap.fromTo(
+//     circle,
+//     {
+//       background:
+//         "conic-gradient(var(--main-color) 0deg, rgba(255,255,255,0.1) 0deg)",
+//     },
+//     {
+//       background: `conic-gradient(var(--main-color) ${level * 3.6}deg, rgba(255,255,255,0.1) 0deg)`,
+//       duration: 1.5,
+//       ease: "power1.out",
+//       scrollTrigger: {
+//         trigger: card,
+//         start: "top 80%", // déclenche quand le haut de la carte touche 80% du viewport
+//       },
+//       onUpdate: () => {
+//         const deg = gsap.getProperty(circle, "background");
+//         let current = Math.round(
+//           parseFloat(level) * gsap.getProperty(circle, "progress") || 0,
+//         );
+//         percent.textContent = `${current}%`;
+//       },
+//     },
+//   );
+// });
+function animateSkill(card) {
   const circle = card.querySelector(".skill-circle");
-  const percent = card.dataset.level;
-  const percentText = card.querySelector(".skill-percent");
+  const percent = card.querySelector(".skill-percent");
+  const level = parseInt(card.dataset.level);
 
-  card.addEventListener("mouseenter", () => {
-    let current = 0;
-    let interval = setInterval(() => {
-      if (current >= percent) {
-        clearInterval(interval);
-      } else {
-        current++;
-        percentText.textContent = current + "%";
-        circle.style.background = `conic-gradient(var(--main-color) ${current * 3.6}deg, rgba(255,255,255,0.1) ${current * 3.6}deg)`;
-      }
-    }, 15);
-  });
+  let obj = { value: 0 };
 
-  // reset si tu veux que ça reparte à 0 au mouse leave
-  card.addEventListener("mouseleave", () => {
-    percentText.textContent = "0%";
-    circle.style.background = `conic-gradient(var(--main-color) 0deg, rgba(255,255,255,0.1) 0deg)`;
+  gsap.to(obj, {
+    value: level,
+    duration: 1.5,
+    ease: "power1.out",
+
+    onUpdate: () => {
+      let deg = obj.value * 3.6;
+
+      circle.style.background = `conic-gradient(var(--main-color) ${deg}deg, rgba(255,255,255,0.1) 0deg)`;
+
+      percent.textContent = `${Math.round(obj.value)}%`;
+    },
   });
-});
+}
+if (window.innerWidth <= 650) {
+  document.querySelectorAll(".skill-card").forEach((card) => {
+    ScrollTrigger.create({
+      trigger: card,
+      start: "top 80%",
+      once: true,
+      onEnter: () => animateSkill(card),
+    });
+  });
+}
+if (window.innerWidth > 650) {
+  document.querySelectorAll(".skill-card").forEach((card) => {
+    card.addEventListener("mouseenter", () => {
+      animateSkill(card);
+    });
+  });
+}
 
 // FOOTER
 const scrollTopBtn = document.getElementById("scrollTop");
