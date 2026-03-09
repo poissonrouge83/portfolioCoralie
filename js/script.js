@@ -156,72 +156,79 @@ explodeTexts.forEach((text) => {
 //
 //////////////
 // Animation projet
+// -------------------------------
+// Slider projets stable au scroll
+// -------------------------------
 const track = document.querySelector(".projects-track");
 const wrapper = document.querySelector(".projects-wrapper");
+const projectsSection = document.querySelector(".projects-section");
 
-// Duplique les images pour la boucle infinie
+// Dupliquer le contenu pour créer un scroll infini visuel
 track.innerHTML += track.innerHTML;
 
 let isDown = false;
 let startX;
-let autoScrollTimer;
 
-// Animation GSAP auto-scroll
-const autoScroll = gsap.to(track, {
-  x: "-50%",
-  duration: 50,
+// Timeline GSAP pour slider
+// On n'utilise pas repeat: -1 infini pour éviter les conflits
+const sliderTimeline = gsap.timeline({ paused: true });
+sliderTimeline.to(track, {
+  xPercent: -50, // déplace le track horizontalement
   ease: "none",
-  repeat: -1,
+  duration: 50,
 });
 
-// Fonction pour relancer l'auto-scroll après X ms
-function restartAutoScroll(delay = 60000) {
-  clearTimeout(autoScrollTimer);
-  autoScrollTimer = setTimeout(() => {
-    autoScroll.resume();
-  }, delay);
-}
-
-// Drag avec souris / doigt
+// -------------------------------
+// Drag interactif
+// -------------------------------
 wrapper.addEventListener("pointerdown", (e) => {
   isDown = true;
-
-  autoScroll.pause(); // Stoppe l'auto-scroll
-  clearTimeout(autoScrollTimer);
-
-  startX = e.clientX; // clientX fonctionne aussi sur mobile
+  sliderTimeline.pause(); // pause l'animation pendant le drag
+  startX = e.clientX;
   wrapper.style.cursor = "grabbing";
 });
 
 wrapper.addEventListener("pointermove", (e) => {
   if (!isDown) return;
   e.preventDefault();
-
-  const x = e.clientX;
-  const walk = (x - startX) * 1.5; // vitesse du drag
-  gsap.to(track, {
-    x: `+=${walk}px`,
-    duration: 0,
-  });
-
-  startX = x; // mise à jour pour la prochaine frame
+  const walk = (e.clientX - startX) * 1.5;
+  gsap.to(track, { x: `+=${walk}px`, duration: 0 });
+  startX = e.clientX;
 });
 
 wrapper.addEventListener("pointerup", () => {
   isDown = false;
   wrapper.style.cursor = "grab";
-
-  restartAutoScroll(); // relance l'auto-scroll après 1 min
 });
 
 wrapper.addEventListener("pointerleave", () => {
   if (!isDown) return;
   isDown = false;
   wrapper.style.cursor = "grab";
-
-  restartAutoScroll();
 });
 
+// -------------------------------
+// ScrollTrigger pour démarrer le slider au scroll
+// -------------------------------
+ScrollTrigger.create({
+  trigger: projectsSection,
+  start: "top, 40%", // quand le haut de la section atteint le bas de l'écran
+  onEnter: () => sliderTimeline.play(), // joue l'animation au scroll
+  once: true, // ne déclenche qu'une seule fois
+  markers: true,
+});
+// force GSAP à recalculer les positions
+ScrollTrigger.refresh();
+
+// -------------------------------
+// Optionnel : si la section est déjà visible au chargement
+// -------------------------------
+window.addEventListener("load", () => {
+  const rect = projectsSection.getBoundingClientRect();
+  if (rect.top < window.innerHeight && rect.bottom > 0) {
+    sliderTimeline.play();
+  }
+});
 //
 //
 //
