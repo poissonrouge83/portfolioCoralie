@@ -108,60 +108,82 @@ if (gallery) {
     });
   }
 
-  function randomStart(card) {
-    const dir = gsap.utils.random(["top", "bottom", "left", "right"]);
-    const drift = gsap.utils.random(180, 320);
-    const cross = gsap.utils.random(-140, 140);
-
-    let x = 0;
-    let y = 0;
-
-    if (dir === "top") {
-      x = cross;
-      y = -drift;
-    } else if (dir === "bottom") {
-      x = cross;
-      y = drift;
-    } else if (dir === "left") {
-      x = -drift;
-      y = cross;
-    } else {
-      x = drift;
-      y = cross;
-    }
-
-    gsap.set(card, {
-      x,
-      y,
-      rotation: gsap.utils.random(-14, 14),
-      opacity: 0,
-      scale: prefersReducedMotion ? 1 : 0.92,
-    });
+  function applyOrbit(card, orbit, vx, vy) {
+    const currentX = Math.cos(orbit.angle) * orbit.radius;
+    const currentY = Math.sin(orbit.angle) * orbit.radius;
+    gsap.set(card, { x: currentX - vx, y: currentY - vy });
   }
 
   function animateCardsEntrance() {
     const cards = gsap.utils.toArray(".card");
     gsap.killTweensOf(cards);
 
-    cards.forEach((card) => randomStart(card));
+    if (prefersReducedMotion) {
+      gsap.set(cards, { x: 0, y: 0, rotation: 0, opacity: 1, scale: 1 });
+      return;
+    }
 
-    gsap.to(cards, {
-      x: 0,
-      y: 0,
-      rotation: 0,
-      opacity: 1,
-      scale: 1,
-      duration: prefersReducedMotion ? 0.01 : 1.3,
-      ease: "power3.out",
-      stagger: {
-        each: 0.1,
-        from: "random",
-      },
-      onComplete: () => {
-        if (!prefersReducedMotion) {
-          floatCards(cards);
-        }
-      },
+    const galleryRect = gallery.getBoundingClientRect();
+    const centerX = galleryRect.left + galleryRect.width / 2;
+    const centerY = galleryRect.top + galleryRect.height / 2;
+    let completed = 0;
+
+    cards.forEach((card, index) => {
+      const rect = card.getBoundingClientRect();
+      const cardCenterX = rect.left + rect.width / 2;
+      const cardCenterY = rect.top + rect.height / 2;
+
+      const vx = cardCenterX - centerX;
+      const vy = cardCenterY - centerY;
+      const baseRadius = Math.max(1, Math.hypot(vx, vy));
+      const baseAngle = Math.atan2(vy, vx);
+      const spin = gsap.utils.random(Math.PI * 1.1, Math.PI * 1.9);
+
+      const orbit = {
+        radius: 0,
+        angle: baseAngle + spin,
+      };
+
+      gsap.set(card, {
+        x: -vx,
+        y: -vy,
+        opacity: 0,
+        scale: 0.86,
+        rotation: gsap.utils.random(-6, 6),
+      });
+
+      const delay = index * 0.06 + gsap.utils.random(0, 0.35);
+      const tl = gsap.timeline({ delay });
+
+      tl.to(card, { opacity: 1, duration: 0.45, ease: "power1.out" }, 0);
+      tl.to(card, { scale: 1, duration: 1.2, ease: "power3.out" }, 0);
+      tl.to(card, { rotation: 0, duration: 1.2, ease: "power3.out" }, 0);
+
+      tl.to(
+        orbit,
+        {
+          radius: baseRadius * 1.1,
+          angle: baseAngle - 0.15,
+          duration: 1.2,
+          ease: "power2.out",
+          onUpdate: () => applyOrbit(card, orbit, vx, vy),
+        },
+        0,
+      );
+
+      tl.to(orbit, {
+        radius: baseRadius,
+        angle: baseAngle,
+        duration: 0.55,
+        ease: "power3.out",
+        onUpdate: () => applyOrbit(card, orbit, vx, vy),
+        onComplete: () => {
+          completed += 1;
+          if (completed === cards.length) {
+            floatCards(cards);
+          }
+        },
+      });
     });
   }
 
