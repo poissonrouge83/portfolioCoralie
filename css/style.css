@@ -145,7 +145,7 @@ a {
   transition: transform var(--transition-fast);
 }
 
-.nav-toggle span {
+.nav-toggle .dot {
   display: block;
   width: 6px;
   height: 6px;
@@ -156,38 +156,42 @@ a {
   box-shadow: 0 0 6px rgba(170, 241, 255, 0.8);
 }
 
-.nav-toggle span:nth-child(1) {
+.nav-toggle .dot-1 {
   left: 18px;
 }
 
-.nav-toggle span:nth-child(2) {
+.nav-toggle .dot-2 {
   left: 26px;
   opacity: 0.7;
 }
 
-.nav-toggle span:nth-child(3) {
+.nav-toggle .dot-3 {
   left: 34px;
 }
 
-.header.nav-open .nav-toggle span {
+.nav-toggle .beam {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
   width: 18px;
   height: 3px;
   border-radius: 999px;
-  bottom: 4px;
-  opacity: 0.95;
-  left: 50%;
+  background: rgba(170, 241, 255, 0.95);
+  box-shadow: 0 0 10px rgba(170, 241, 255, 0.8);
+  opacity: 0;
+  transform: translate(-50%, 0);
+  transition:
+    transform var(--transition-fast),
+    opacity var(--transition-fast);
 }
 
-.header.nav-open .nav-toggle span:nth-child(1) {
+.header.nav-open .beam-left {
+  opacity: 0.95;
   transform: translate(-50%, 0) translateX(-8px) rotate(-45deg);
 }
 
-.header.nav-open .nav-toggle span:nth-child(2) {
-  opacity: 0;
-  transform: scale(0);
-}
-
-.header.nav-open .nav-toggle span:nth-child(3) {
+.header.nav-open .beam-right {
+  opacity: 0.95;
   transform: translate(-50%, 0) translateX(8px) rotate(45deg);
 }
 
