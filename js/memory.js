@@ -109,17 +109,18 @@ if (gallery) {
   }
 
   function updateCylinderOrbit(card, orbit, vx, vy) {
-    const baseX = -vx * (1 - orbit.settle);
-    const baseY = -vy * (1 - orbit.settle);
     const orbitX = Math.cos(orbit.angle) * orbit.radius;
     const orbitZ = Math.sin(orbit.angle) * orbit.radius;
-    const orbitY = orbit.lift * (1 - orbit.settle);
+    const orbitY = orbit.lift;
+    const settle = 1 - orbit.settle;
 
     gsap.set(card, {
-      x: baseX + orbitX,
-      y: baseY + orbitY,
-      z: orbitZ,
+      x: (orbitX - vx) * settle,
+      y: (orbitY - vy) * settle,
+      z: orbitZ * settle,
       rotationY: (orbit.angle * 180) / Math.PI + 90,
+      rotationX: 0,
+      rotationZ: 0,
     });
   }
 
@@ -128,7 +129,17 @@ if (gallery) {
     gsap.killTweensOf(cards);
 
     if (prefersReducedMotion) {
-      gsap.set(cards, { x: 0, y: 0, rotation: 0, opacity: 1, scale: 1 });
+      cards.forEach((card) => card.classList.remove("is-orbiting"));
+      gsap.set(cards, {
+        x: 0,
+        y: 0,
+        z: 0,
+        rotationY: 0,
+        rotationX: 0,
+        rotationZ: 0,
+        opacity: 1,
+        scale: 1,
+      });
       return;
     }
 
@@ -145,15 +156,18 @@ if (gallery) {
       const vx = cardCenterX - centerX;
       const vy = cardCenterY - centerY;
       const orbit = {
-        angle: gsap.utils.random(0, Math.PI * 2),
-        radius: gsap.utils.random(220, 320),
-        lift: gsap.utils.random(-40, 40),
+        angle: (Math.PI * 2 * index) / cards.length,
+        radius: 280,
+        lift: 0,
         settle: 0,
       };
 
-      gsap.set(card, { opacity: 0, scale: 0.85 });
+      card.classList.add("is-orbiting");
+      gsap.set(card, { opacity: 0, scale: 0.88 });
 
-      const delay = index * 0.18 + gsap.utils.random(0, 0.2);
+      const delay = index * 0.22;
+      const orbitTurns = 5;
+      const orbitDuration = 2.8;
       const tl = gsap.timeline({ delay });
 
       tl.to(card, { opacity: 1, duration: 0.35, ease: "power1.out" }, 0);
@@ -162,9 +176,9 @@ if (gallery) {
       tl.to(
         orbit,
         {
-          angle: orbit.angle + Math.PI * 1.6,
-          duration: 1.6,
-          ease: "power2.inOut",
+          angle: orbit.angle + Math.PI * 2 * orbitTurns,
+          duration: orbitDuration,
+          ease: "none",
           onUpdate: () => updateCylinderOrbit(card, orbit, vx, vy),
         },
         0,
@@ -173,10 +187,12 @@ if (gallery) {
       tl.to(orbit, {
         radius: 0,
         settle: 1,
-        duration: 0.7,
+        duration: 0.8,
         ease: "power3.out",
         onUpdate: () => updateCylinderOrbit(card, orbit, vx, vy),
         onComplete: () => {
+          card.classList.remove("is-orbiting");
+          gsap.set(card, { z: 0, rotationY: 0, rotationX: 0, rotationZ: 0 });
           completed += 1;
           if (completed === cards.length) {
             floatCards(cards);
