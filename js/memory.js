@@ -108,10 +108,19 @@ if (gallery) {
     });
   }
 
-  function applyOrbit(card, orbit, vx, vy) {
-    const currentX = Math.cos(orbit.angle) * orbit.radius;
-    const currentY = Math.sin(orbit.angle) * orbit.radius;
-    gsap.set(card, { x: currentX - vx, y: currentY - vy });
+  function updateCylinderOrbit(card, orbit, vx, vy) {
+    const baseX = -vx * (1 - orbit.settle);
+    const baseY = -vy * (1 - orbit.settle);
+    const orbitX = Math.cos(orbit.angle) * orbit.radius;
+    const orbitZ = Math.sin(orbit.angle) * orbit.radius;
+    const orbitY = orbit.lift * (1 - orbit.settle);
+
+    gsap.set(card, {
+      x: baseX + orbitX,
+      y: baseY + orbitY,
+      z: orbitZ,
+      rotationY: (orbit.angle * 180) / Math.PI + 90,
+    });
   }
 
   function animateCardsEntrance() {
@@ -135,48 +144,38 @@ if (gallery) {
 
       const vx = cardCenterX - centerX;
       const vy = cardCenterY - centerY;
-      const baseRadius = Math.max(1, Math.hypot(vx, vy));
-      const baseAngle = Math.atan2(vy, vx);
-      const spin = gsap.utils.random(Math.PI * 1.1, Math.PI * 1.9);
-
       const orbit = {
-        radius: 0,
-        angle: baseAngle + spin,
+        angle: gsap.utils.random(0, Math.PI * 2),
+        radius: gsap.utils.random(220, 320),
+        lift: gsap.utils.random(-40, 40),
+        settle: 0,
       };
 
-      gsap.set(card, {
-        x: -vx,
-        y: -vy,
-        opacity: 0,
-        scale: 0.86,
-        rotation: gsap.utils.random(-6, 6),
-      });
+      gsap.set(card, { opacity: 0, scale: 0.85 });
 
-      const delay = index * 0.06 + gsap.utils.random(0, 0.35);
+      const delay = index * 0.18 + gsap.utils.random(0, 0.2);
       const tl = gsap.timeline({ delay });
 
-      tl.to(card, { opacity: 1, duration: 0.45, ease: "power1.out" }, 0);
-      tl.to(card, { scale: 1, duration: 1.2, ease: "power3.out" }, 0);
-      tl.to(card, { rotation: 0, duration: 1.2, ease: "power3.out" }, 0);
+      tl.to(card, { opacity: 1, duration: 0.35, ease: "power1.out" }, 0);
+      tl.to(card, { scale: 1, duration: 1.4, ease: "power2.out" }, 0);
 
       tl.to(
         orbit,
         {
-          radius: baseRadius * 1.1,
-          angle: baseAngle - 0.15,
-          duration: 1.2,
-          ease: "power2.out",
-          onUpdate: () => applyOrbit(card, orbit, vx, vy),
+          angle: orbit.angle + Math.PI * 1.6,
+          duration: 1.6,
+          ease: "power2.inOut",
+          onUpdate: () => updateCylinderOrbit(card, orbit, vx, vy),
         },
         0,
       );
 
       tl.to(orbit, {
-        radius: baseRadius,
-        angle: baseAngle,
-        duration: 0.55,
+        radius: 0,
+        settle: 1,
+        duration: 0.7,
         ease: "power3.out",
-        onUpdate: () => applyOrbit(card, orbit, vx, vy),
+        onUpdate: () => updateCylinderOrbit(card, orbit, vx, vy),
         onComplete: () => {
           completed += 1;
           if (completed === cards.length) {

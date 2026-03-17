@@ -595,6 +595,8 @@ a {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
+  perspective: 900px;
+  transform-style: preserve-3d;
 }
 
 .card {
@@ -606,8 +608,10 @@ a {
   border-radius: 16px;
   overflow: hidden;
   transform-style: preserve-3d;
+  will-change: transform;
+  background: rgba(255, 255, 255, 0.05);
 
-  background: rgba(255, 255, 255, 0.4);
+  /* background: rgba(255, 255, 255, 0.4); */
   border: 1px solid rgba(170, 241, 255, 0.45);
   box-shadow: 0 12px 30px rgba(2, 6, 23, 0.18);
 
