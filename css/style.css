@@ -49,7 +49,12 @@ canvas {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Poppins",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 body {
@@ -584,61 +589,95 @@ a {
 } */
 .gallery {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 4 colonnes desktop */
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 18px;
   padding: var(--section-padding);
   width: 100%;
-  max-width: 500px;
-  /* width: 100%; */
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 720px;
   margin: 0 auto;
-  /* background-color: red; */
 }
 
 .card {
   width: 100%;
-  aspect-ratio: 170/120; /* garde la proportion */
-  perspective: 1000px;
+  aspect-ratio: 4/3;
+  perspective: 1200px;
   cursor: pointer;
   position: relative;
-  /* box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3); */
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-primary);
-  border-radius: 5px;
-  margin-left: auto;
-  margin-right: auto;
+  border-radius: 16px;
+  overflow: hidden;
+  transform-style: preserve-3d;
+
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(170, 241, 255, 0.45);
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.18);
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    120% 120% at 20% 10%,
+    rgba(170, 241, 255, 0.45),
+    rgba(255, 255, 255, 0.1)
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card:hover {
+  transform: translateY(-6px) rotateX(2deg) rotateY(-2deg);
+  border-color: rgba(170, 241, 255, 0.7);
+  box-shadow:
+    0 16px 40px rgba(2, 6, 23, 0.28),
+    0 0 25px rgba(170, 241, 255, 0.25);
+}
+
+.card:hover::before {
+  opacity: 1;
 }
 
 .card .front,
 .card .back {
   width: 100%;
   height: 100%;
-  border-radius: 5px;
+  border-radius: 16px;
   backface-visibility: hidden;
   position: absolute;
   top: 0;
   left: 0;
   overflow: hidden;
-  transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 1;
 }
 
 .card .front {
-  /* background: linear-gradient(135deg, #555, #777); */
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
   font-weight: bold;
   text-transform: uppercase;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  background: url("/img/moi-orange.png") no-repeat center/cover;
-  background-size: contain;
+  background:
+    radial-gradient(
+      120% 120% at 20% 10%,
+      rgba(170, 241, 255, 0.35),
+      rgba(255, 255, 255, 0.08)
+    ),
+    url("../img/moi-orange.png") no-repeat center/60%;
 }
 
 .card .back {
   transform: rotateY(180deg);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .card.flipped .front {
@@ -653,6 +692,7 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: saturate(1.05) contrast(1.05);
 }
 
 #victory-message {
