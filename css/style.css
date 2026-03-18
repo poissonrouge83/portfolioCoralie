@@ -498,6 +498,7 @@ a {
   margin: auto;
   height: auto;
 }
+
 /* ===================================================== */
 /* SKILLS CIRCULAR */
 /* ===================================================== */
@@ -628,6 +629,7 @@ a {
   text-align: center;
   transform-origin: center;
   will-change: transform;
+  position: relative;
 }
 
 .stat h3 {
@@ -1195,10 +1197,16 @@ a {
 /* ===================================================== */
 /* RESPONCIVE */
 /* ===================================================== */
-/* 
-@media (max-width: 767px) {
-  .gallery {
-    column-count: 2;
-    width: 90vw;
+
+@media (max-width: 900px) {
+  .stats {
+    display: block;
   }
-} */
+
+  .stat {
+    margin-bottom: 40px;
+  }
+  .about {
+    width: 100%;
+  }
+}
