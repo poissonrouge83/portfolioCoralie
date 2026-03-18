@@ -152,8 +152,9 @@ a {
   border-radius: 999px;
   background: rgba(170, 241, 255, 0.9);
   position: absolute;
-  bottom: 8px;
+  bottom: 11px;
   box-shadow: 0 0 6px rgba(170, 241, 255, 0.8);
+  z-index: 4;
 }
 
 .nav-toggle .dot-1 {
@@ -558,7 +559,9 @@ a {
   position: relative;
   padding: 18px;
   backdrop-filter: blur(12px);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
   background: linear-gradient(
     160deg,
     rgba(2, 6, 23, 0.95),
