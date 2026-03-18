@@ -99,3 +99,86 @@ document.addEventListener("click", (event) => {
     ripple.remove();
   }, 1800);
 });
+
+// Soucoupe compagnon: déplacement lent + pauses en lévitation
+const ufoCompanion = document.querySelector(".ufo-companion");
+if (ufoCompanion && window.gsap) {
+  const prefersReducedMotion =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!prefersReducedMotion) {
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+    const startFlight = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const margin = 80;
+      const startX = -margin;
+      const startY = clamp(
+        vh * 0.15 + Math.random() * vh * 0.55,
+        120,
+        vh - 120,
+      );
+
+      gsap.set(ufoCompanion, {
+        x: startX,
+        y: startY,
+        rotation: gsap.utils.random(-8, 8),
+        scale: gsap.utils.random(0.95, 1.03),
+        autoAlpha: 0,
+      });
+
+      const tl = gsap.timeline({ onComplete: startFlight });
+      tl.to(ufoCompanion, { autoAlpha: 1, duration: 0.8, ease: "power1.out" });
+
+      const segments = gsap.utils.random(4, 6, 1);
+      let currentY = startY;
+
+      for (let i = 0; i < segments; i += 1) {
+        const isLast = i === segments - 1;
+        const nextX = isLast
+          ? vw + margin
+          : gsap.utils.random(vw * 0.15, vw * 0.85);
+        const nextY = clamp(
+          currentY + gsap.utils.random(-220, 220),
+          120,
+          vh - 120,
+        );
+        currentY = nextY;
+
+        tl.to(ufoCompanion, {
+          x: nextX,
+          y: nextY,
+          rotation: gsap.utils.random(-12, 12),
+          duration: gsap.utils.random(5, 9),
+          ease: gsap.utils.random(["sine.inOut", "power1.inOut", "power2.inOut"]),
+        });
+
+        if (!isLast && Math.random() < 0.6) {
+          tl.to(ufoCompanion, {
+            x: nextX + gsap.utils.random(-14, 14),
+            y: nextY + gsap.utils.random(-14, 14),
+            duration: gsap.utils.random(1.6, 3.2),
+            ease: "sine.inOut",
+          });
+        }
+
+        if (!isLast && Math.random() < 0.45) {
+          tl.to(ufoCompanion, {
+            x: nextX + gsap.utils.random(-40, 40),
+            y: nextY + gsap.utils.random(-30, 30),
+            duration: gsap.utils.random(0.6, 1),
+            ease: "power2.in",
+          });
+        }
+      }
+
+      tl.to(ufoCompanion, { autoAlpha: 0, duration: 0.8 });
+    };
+
+    startFlight();
+  } else {
+    ufoCompanion.style.opacity = "0";
+  }
+}
