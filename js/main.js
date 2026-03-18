@@ -65,3 +65,37 @@ window.addEventListener("scroll", () => {
     }
   });
 });
+
+// Ripple effect au clic (effet vague dans l'eau)
+const rippleLayer = document.createElement("div");
+rippleLayer.className = "click-ripples";
+document.body.appendChild(rippleLayer);
+
+document.addEventListener("click", (event) => {
+  // Ignore les clics sur les éléments interactifs pour éviter la surcharge visuelle
+  if (
+    event.target.closest(
+      "a, button, input, textarea, select, .nav-toggle, .navbar",
+    )
+  ) {
+    return;
+  }
+
+  const ripple = document.createElement("div");
+  ripple.className = "click-ripple";
+  ripple.style.left = `${event.clientX}px`;
+  ripple.style.top = `${event.clientY}px`;
+
+  ripple.innerHTML = `
+    <span class="ring ring-1"></span>
+    <span class="ring ring-2"></span>
+    <span class="ring ring-3"></span>
+  `;
+
+  rippleLayer.appendChild(ripple);
+
+  // Nettoyage une fois l'animation terminée
+  setTimeout(() => {
+    ripple.remove();
+  }, 1800);
+});

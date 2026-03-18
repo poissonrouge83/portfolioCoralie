@@ -93,6 +93,58 @@ a {
 }
 
 /* ===================================================== */
+/* CLICK RIPPLES */
+/* ===================================================== */
+
+.click-ripples {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.click-ripple {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+}
+
+.click-ripple .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(170, 241, 255, 0.45);
+  animation: rippleOut 1.6s ease-out forwards;
+  opacity: 0.7;
+}
+
+.click-ripple .ring-2 {
+  animation-delay: 0.12s;
+  border-color: rgba(170, 241, 255, 0.35);
+}
+
+.click-ripple .ring-3 {
+  animation-delay: 0.24s;
+  border-color: rgba(170, 241, 255, 0.25);
+}
+
+@keyframes rippleOut {
+  0% {
+    transform: scale(0.2);
+    opacity: 0.6;
+  }
+  70% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(6);
+    opacity: 0;
+  }
+}
+
+/* ===================================================== */
 /* FADE SECTIONS */
 /* ===================================================== */
 
