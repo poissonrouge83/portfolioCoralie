@@ -21,20 +21,20 @@ gsap.utils.toArray(".fade").forEach((section) => {
 // PHYSICS STATS
 // ===============================
 
-gsap.from(".stat", {
-  yPercent: -100,
-  rotation: () => gsap.utils.random(-25, 25),
-  opacity: 0,
-  duration: 1.05,
-  ease: "power2.out",
-  stagger: 0.2,
-
-  scrollTrigger: {
-    trigger: ".stats",
-    start: "top 80%",
-    toggleActions: "restart none none none",
-    once: false,
-  },
+gsap.utils.toArray(".stat").forEach((stat) => {
+  gsap.from(stat, {
+    y: -120,
+    rotation: gsap.utils.random(-8, 8),
+    opacity: 0,
+    duration: 1.4,
+    ease: "power3.out",
+    scrollTrigger: {
+      trigger: stat,
+      start: "top 85%",
+      toggleActions: "restart none none none",
+      once: false,
+    },
+  });
 });
 
 ///////////// GSAP ANIM DOUBLE

@@ -1,5 +1,6 @@
 // SCROLL TO TOP
 const scrollTopBtn = document.getElementById("scrollTop");
+const heroSection = document.getElementById("home");
 
 scrollTopBtn.onclick = () => {
   window.scrollTo({
@@ -64,6 +65,13 @@ window.addEventListener("scroll", () => {
       });
     }
   });
+
+  if (scrollTopBtn) {
+    const threshold = heroSection ? heroSection.offsetHeight * 0.6 : 300;
+    if (window.scrollY > threshold)
+      scrollTopBtn.classList.add("is-visible");
+    else scrollTopBtn.classList.remove("is-visible");
+  }
 });
 
 // Ripple effect au clic (effet vague dans l'eau)
