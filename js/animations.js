@@ -22,13 +22,12 @@ gsap.utils.toArray(".fade").forEach((section) => {
 // ===============================
 
 gsap.from(".stat", {
-  yPercent: -200,
-  // y: -120,
-  rotation: () => gsap.utils.random(-300, 300),
+  yPercent: -100,
+  rotation: () => gsap.utils.random(-25, 25),
   opacity: 0,
-  duration: 1.2,
-  ease: "bounce.out",
-  stagger: 0.25,
+  duration: 1.05,
+  ease: "power2.out",
+  stagger: 0.2,
 
   scrollTrigger: {
     trigger: ".stats",
