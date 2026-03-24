@@ -9,6 +9,10 @@
       name="description"
       content="Designer UI/UX et intégratrice front-end. Interfaces futuristes, accessibles et élégantes."
     />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1"
+    />
 
     <!-- Canonical + Social preview -->
     <link
@@ -28,8 +32,10 @@
     />
     <meta
       property="og:image"
-      content="https://coralie-portfolio.com/img/icon-512.png"
+      content="https://coralie-portfolio.com/img/nuance.png"
     />
+    <meta property="og:image" content="https://coralie-portfolio.com/img/ko.png" />
+    <meta property="og:image" content="https://coralie-portfolio.com/img/ajt.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Coralie" />
@@ -39,7 +45,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://coralie-portfolio.com/img/icon-512.png"
+      content="https://coralie-portfolio.com/img/nuance.png"
     />
 
     <!-- Icons -->
@@ -51,18 +57,45 @@
       href="img/favicon-48.png"
     />
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
-    <link rel="manifest" href="site.webmanifest" />
     <meta name="theme-color" content="#f6fbff" />
 
     <!-- Structured data (helps Google understand your page; no guarantee of images in SERP) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Coralie Leclère",
-        "jobTitle": "Designer UI/UX & Intégratrice Frontend",
-        "url": "https://coralie-portfolio.com/",
-        "image": "https://coralie-portfolio.com/img/icon-512.png"
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://coralie-portfolio.com/#coralie",
+            "name": "Coralie Leclère",
+            "jobTitle": "Designer UI/UX & Intégratrice Frontend",
+            "url": "https://coralie-portfolio.com/",
+            "image": "https://coralie-portfolio.com/img/icon-512.png"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://coralie-portfolio.com/#website",
+            "url": "https://coralie-portfolio.com/",
+            "name": "Coralie",
+            "publisher": { "@id": "https://coralie-portfolio.com/#coralie" }
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://coralie-portfolio.com/#webpage",
+            "url": "https://coralie-portfolio.com/",
+            "name": "Coralie",
+            "primaryImageOfPage": {
+              "@type": "ImageObject",
+              "url": "https://coralie-portfolio.com/img/nuance.png"
+            },
+            "image": [
+              "https://coralie-portfolio.com/img/nuance.png",
+              "https://coralie-portfolio.com/img/ko.png",
+              "https://coralie-portfolio.com/img/ajt.png"
+            ],
+            "isPartOf": { "@id": "https://coralie-portfolio.com/#website" }
+          }
+        ]
       }
     </script>
 
