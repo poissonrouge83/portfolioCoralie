@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://poissonrouge83.github.io/portfolioCoralie/sitemap.xml
-
+Sitemap: https://coralie-portfolio.com/sitemap.xml
