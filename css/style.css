@@ -1069,7 +1069,7 @@ button:focus-visible {
 .memory-kicker {
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 0.7rem;
+  font-size: 1rem;
   color: rgba(170, 241, 255, 0.7);
   margin-bottom: 8px;
 }
