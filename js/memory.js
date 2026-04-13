@@ -8,7 +8,7 @@ if (gallery) {
     "img/ajt.png",
     "img/ko.png",
     "img/nuance.png",
-    "img/logos.png",
+    "img/mendel.png",
     "img/lumen.png",
     "img/mockup.png",
   ];
