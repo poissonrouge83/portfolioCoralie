@@ -1,0 +1,226 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" width="400" height="560">
+  <defs>
+
+    <!-- Q neon outline stroke gradient -->
+    <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="40%"  stop-color="#00f0ff" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#0090cc" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <!-- Inner fill of the ? (glassy) -->
+    <linearGradient id="qFill" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%"   stop-color="#aaf6ff" stop-opacity="0.95"/>
+      <stop offset="50%"  stop-color="#00ccee" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#005588" stop-opacity="0.7"/>
+    </linearGradient>
+
+    <!-- Glow halo around the whole ? -->
+    <radialGradient id="halo" cx="50%" cy="45%" r="50%">
+      <stop offset="0%"   stop-color="#00eeff" stop-opacity="0.35"/>
+      <stop offset="50%"  stop-color="#0088cc" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#001833" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft nebula cloud behind everything -->
+    <radialGradient id="nebula" cx="50%" cy="48%" r="48%">
+      <stop offset="0%"   stop-color="#b0d8f0" stop-opacity="0.18"/>
+      <stop offset="40%"  stop-color="#4aaad0" stop-opacity="0.10"/>
+      <stop offset="75%"  stop-color="#1155aa" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000820" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Shine highlight on the ? arc -->
+    <linearGradient id="shine" x1="0%" y1="0%" x2="50%" y2="80%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="60%"  stop-color="#aaeeff" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#00ccff" stop-opacity="0"/>
+    </linearGradient>
+
+  </defs>
+
+  <!-- Nebula cloud (transparent blob) -->
+  <ellipse cx="200" cy="268" rx="175" ry="210" fill="url(#nebula)"/>
+
+  <!-- Outer halo glow -->
+  <ellipse cx="200" cy="250" rx="160" ry="180" fill="url(#halo)"/>
+
+  <!-- === QUESTION MARK drawn with paths === -->
+  <!-- The ? is built as a thick outlined glyph via two overlapping paths (outer stroke, inner fill) -->
+
+  <!-- OUTER glow layer (thick, blurred effect via multiple strokes) -->
+  <path d="
+    M200 120
+    C200 120 240 108 255 140
+    C268 168 250 190 230 208
+    C214 222 205 232 205 252
+    L205 268
+  "
+    fill="none"
+    stroke="#00eeff"
+    stroke-width="36"
+    stroke-linecap="round"
+    stroke-opacity="0.18"
+  />
+  <circle cx="205" cy="310" r="20" fill="#00eeff" fill-opacity="0.18"/>
+
+  <!-- Mid glow layer -->
+  <path d="
+    M200 120
+    C200 120 240 108 255 140
+    C268 168 250 190 230 208
+    C214 222 205 232 205 252
+    L205 268
+  "
+    fill="none"
+    stroke="#00ddff"
+    stroke-width="22"
+    stroke-linecap="round"
+    stroke-opacity="0.35"
+  />
+  <circle cx="205" cy="310" r="14" fill="#00ddff" fill-opacity="0.35"/>
+
+  <!-- Main ? outline (neon edge) -->
+  <path d="
+    M200 120
+    C200 120 240 108 255 140
+    C268 168 250 190 230 208
+    C214 222 205 232 205 252
+    L205 268
+  "
+    fill="none"
+    stroke="url(#neonGrad)"
+    stroke-width="12"
+    stroke-linecap="round"
+  />
+  <circle cx="205" cy="310" r="9" fill="url(#neonGrad)"/>
+
+  <!-- Inner fill (glassy) -->
+  <path d="
+    M200 120
+    C200 120 240 108 255 140
+    C268 168 250 190 230 208
+    C214 222 205 232 205 252
+    L205 268
+  "
+    fill="none"
+    stroke="url(#qFill)"
+    stroke-width="5"
+    stroke-linecap="round"
+  />
+  <circle cx="205" cy="310" r="4.5" fill="url(#qFill)"/>
+
+  <!-- Shine highlight on arc -->
+  <path d="
+    M200 120
+    C200 120 235 110 250 138
+    C260 158 252 178 238 196
+  "
+    fill="none"
+    stroke="url(#shine)"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+  <!-- ========== STARS / SPARKLES ========== -->
+
+  <!-- 4-branch star macro (large) -->
+  <g transform="translate(110,165)" opacity="0.95">
+    <line x1="0" y1="-18" x2="0" y2="18"  stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-18" y1="0" x2="18" y2="0"  stroke="white" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-9" y1="-9" x2="9" y2="9"   stroke="white" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
+    <line x1="9" y1="-9" x2="-9" y2="9"   stroke="white" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
+    <circle cx="0" cy="0" r="2.5" fill="white"/>
+  </g>
+
+  <g transform="translate(296,190)" opacity="0.9">
+    <line x1="0" y1="-14" x2="0" y2="14"  stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="-14" y1="0" x2="14" y2="0"  stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="-7" y1="-7" x2="7" y2="7"   stroke="white" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/>
+    <line x1="7" y1="-7" x2="-7" y2="7"   stroke="white" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/>
+    <circle cx="0" cy="0" r="2" fill="white"/>
+  </g>
+
+  <g transform="translate(115,355)" opacity="0.85">
+    <line x1="0" y1="-16" x2="0" y2="16"  stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="-16" y1="0" x2="16" y2="0"  stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="-8" y1="-8" x2="8" y2="8"   stroke="white" stroke-width="0.6" stroke-linecap="round" opacity="0.5"/>
+    <line x1="8" y1="-8" x2="-8" y2="8"   stroke="white" stroke-width="0.6" stroke-linecap="round" opacity="0.5"/>
+    <circle cx="0" cy="0" r="2" fill="white"/>
+  </g>
+
+  <g transform="translate(300,380)" opacity="0.9">
+    <line x1="0" y1="-13" x2="0" y2="13"  stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="-13" y1="0" x2="13" y2="0"  stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="-6" y1="-6" x2="6" y2="6"   stroke="white" stroke-width="0.6" stroke-linecap="round" opacity="0.4"/>
+    <line x1="6" y1="-6" x2="-6" y2="6"   stroke="white" stroke-width="0.6" stroke-linecap="round" opacity="0.4"/>
+    <circle cx="0" cy="0" r="1.8" fill="white"/>
+  </g>
+
+  <!-- Medium stars -->
+  <g transform="translate(165,95)" opacity="0.8">
+    <line x1="0" y1="-10" x2="0" y2="10" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+    <line x1="-10" y1="0" x2="10" y2="0" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+    <line x1="-5" y1="-5" x2="5" y2="5"  stroke="white" stroke-width="0.5" stroke-linecap="round" opacity="0.4"/>
+    <line x1="5" y1="-5" x2="-5" y2="5"  stroke="white" stroke-width="0.5" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <g transform="translate(315,140)" opacity="0.75">
+    <line x1="0" y1="-9" x2="0" y2="9" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+    <line x1="-9" y1="0" x2="9" y2="0" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+    <line x1="-5" y1="-5" x2="5" y2="5" stroke="white" stroke-width="0.5" stroke-linecap="round" opacity="0.4"/>
+    <line x1="5" y1="-5" x2="-5" y2="5" stroke="white" stroke-width="0.5" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <g transform="translate(78,290)" opacity="0.7">
+    <line x1="0" y1="-9" x2="0" y2="9" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-9" y1="0" x2="9" y2="0" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-5" y1="-5" x2="5" y2="5" stroke="white" stroke-width="0.4" stroke-linecap="round" opacity="0.4"/>
+    <line x1="5" y1="-5" x2="-5" y2="5" stroke="white" stroke-width="0.4" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <g transform="translate(330,305)" opacity="0.72">
+    <line x1="0" y1="-8" x2="0" y2="8" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-8" y1="0" x2="8" y2="0" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-4" y1="-4" x2="4" y2="4" stroke="white" stroke-width="0.4" stroke-linecap="round" opacity="0.4"/>
+    <line x1="4" y1="-4" x2="-4" y2="4" stroke="white" stroke-width="0.4" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <g transform="translate(200,450)" opacity="0.65">
+    <line x1="0" y1="-8" x2="0" y2="8" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-8" y1="0" x2="8" y2="0" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-4" y1="-4" x2="4" y2="4" stroke="white" stroke-width="0.4" stroke-linecap="round" opacity="0.4"/>
+    <line x1="4" y1="-4" x2="-4" y2="4" stroke="white" stroke-width="0.4" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <!-- Tiny sparkle dots scattered -->
+  <circle cx="140" cy="130" r="2.2" fill="white" fill-opacity="0.9"/>
+  <circle cx="270" cy="112" r="1.8" fill="white" fill-opacity="0.85"/>
+  <circle cx="340" cy="240" r="2"   fill="white" fill-opacity="0.8"/>
+  <circle cx="88"  cy="220" r="1.6" fill="white" fill-opacity="0.7"/>
+  <circle cx="325" cy="430" r="1.8" fill="white" fill-opacity="0.75"/>
+  <circle cx="82"  cy="420" r="1.4" fill="white" fill-opacity="0.6"/>
+  <circle cx="235" cy="480" r="1.6" fill="white" fill-opacity="0.65"/>
+  <circle cx="155" cy="460" r="1.2" fill="white" fill-opacity="0.55"/>
+  <circle cx="360" cy="355" r="1.4" fill="white" fill-opacity="0.65"/>
+  <circle cx="68"  cy="340" r="1.2" fill="white" fill-opacity="0.55"/>
+  <circle cx="180" cy="68"  r="1.4" fill="white" fill-opacity="0.7"/>
+  <circle cx="310" cy="80"  r="1.2" fill="white" fill-opacity="0.65"/>
+  <circle cx="355" cy="170" r="1.4" fill="white" fill-opacity="0.6"/>
+  <circle cx="100" cy="170" r="1.2" fill="white" fill-opacity="0.55"/>
+  <circle cx="255" cy="415" r="1.2" fill="white" fill-opacity="0.55"/>
+  <circle cx="145" cy="395" r="1"   fill="white" fill-opacity="0.5"/>
+  <circle cx="360" cy="490" r="1"   fill="white" fill-opacity="0.45"/>
+  <circle cx="60"  cy="490" r="1"   fill="white" fill-opacity="0.4"/>
+
+  <!-- Glowing cyan orbs (like in the reference image) -->
+  <circle cx="155" cy="215" r="5.5" fill="#00ccff" fill-opacity="0.55"/>
+  <circle cx="155" cy="215" r="2.5" fill="#aaf6ff" fill-opacity="0.9"/>
+  <circle cx="260" cy="155" r="4"   fill="#00ddff" fill-opacity="0.45"/>
+  <circle cx="260" cy="155" r="1.8" fill="#aaf6ff" fill-opacity="0.85"/>
+  <circle cx="245" cy="358" r="4.5" fill="#00bbee" fill-opacity="0.4"/>
+  <circle cx="245" cy="358" r="2"   fill="#aaf6ff" fill-opacity="0.75"/>
+  <circle cx="168" cy="310" r="3.5" fill="#00ccff" fill-opacity="0.35"/>
+  <circle cx="168" cy="310" r="1.5" fill="#aaf6ff" fill-opacity="0.7"/>
+
+</svg>
