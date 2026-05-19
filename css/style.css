@@ -1306,6 +1306,11 @@ button:focus-visible {
 /* ===================================================== */
 
 @media (max-width: 900px) {
+
+  .hero h1{
+      font-size: 40px;
+
+  }
   .stats {
     display: block;
   }
