@@ -1564,6 +1564,12 @@ button:focus-visible {
   }
 }
 
+@media (max-width: 768px) {
+  .circuit-scroll {
+    display: none;
+  }
+}
+
 @media (max-width: 550px) {
   .hero {
     padding-top: 20%;

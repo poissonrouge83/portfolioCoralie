@@ -6,6 +6,7 @@ const circuitNodes = [...document.querySelectorAll(".circuit-nodes circle")];
 
 if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobileCircuitMedia = window.matchMedia("(max-width: 768px)");
   const svgNamespace = "http://www.w3.org/2000/svg";
   let documentHeight = 0;
   let exchangeBoostZones = [];
@@ -31,6 +32,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   let circuitMicroNodes = [];
   let circuitPulseSprites = [];
   let circuitPulseDescriptors = [];
+  let isCircuitActive = false;
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
   const createSvgElement = (tagName, className) => {
@@ -1284,6 +1286,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   };
 
   const renderCircuits = (revealY) => {
+    if (!isCircuitActive) return;
     const focusY = clamp(window.scrollY + window.innerHeight * 0.5, 0, documentHeight);
     const lighting = getSectionLighting(focusY);
     const breath = getCircuitBreath() * lighting.breath;
@@ -1350,6 +1353,10 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   };
 
   const animateCircuits = (timestamp = 0) => {
+    if (!isCircuitActive) {
+      animationFrameId = 0;
+      return;
+    }
     animationFrameId = 0;
     if (!lastFrameTime) lastFrameTime = timestamp;
     const delta = timestamp - lastFrameTime;
@@ -1382,36 +1389,83 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   };
 
   const requestDraw = () => {
+    if (!isCircuitActive) return;
     targetRevealY = getTargetRevealY();
     if (animationFrameId) return;
     animationFrameId = requestAnimationFrame(animateCircuits);
   };
 
-  buildCircuitPaths();
-  prepareLines();
-  renderCircuits(0);
+  const disableCircuits = () => {
+    isCircuitActive = false;
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = 0;
+    }
+    lastFrameTime = 0;
+    currentRevealY = 0;
+    targetRevealY = 0;
+    circuitPulseClock = 0;
+    circuitLayer.style.display = "none";
+  };
 
-  window.addEventListener(
-    "scroll",
-    () => {
-      hasStartedScroll = window.scrollY > 0;
-      requestDraw();
-    },
-    { passive: true },
-  );
-  window.addEventListener("resize", () => {
+  const enableCircuits = () => {
+    circuitLayer.style.removeProperty("display");
+    buildCircuitPaths();
+    prepareLines();
+    isCircuitActive = true;
+    currentRevealY = 0;
+    targetRevealY = getTargetRevealY();
+    lastFrameTime = 0;
+    renderCircuits(0);
+    requestDraw();
+  };
+
+  const syncCircuitMode = () => {
+    if (mobileCircuitMedia.matches) {
+      disableCircuits();
+      return;
+    }
+
+    if (!isCircuitActive) {
+      enableCircuits();
+      return;
+    }
+
+    circuitLayer.style.removeProperty("display");
     buildCircuitPaths();
     prepareLines();
     currentRevealY = clamp(currentRevealY, 0, documentHeight);
     lastFrameTime = 0;
     requestDraw();
+  };
+
+  syncCircuitMode();
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      hasStartedScroll = window.scrollY > 0;
+      if (!isCircuitActive) return;
+      requestDraw();
+    },
+    { passive: true },
+  );
+  window.addEventListener("resize", () => {
+    hasStartedScroll = window.scrollY > 0;
+    syncCircuitMode();
   });
   reducedMotion.addEventListener("change", () => {
+    if (!isCircuitActive) return;
     lastFrameTime = 0;
     targetRevealY = getTargetRevealY();
     requestDraw();
   });
+  mobileCircuitMedia.addEventListener("change", () => {
+    hasStartedScroll = window.scrollY > 0;
+    syncCircuitMode();
+  });
   document.addEventListener("visibilitychange", () => {
+    if (!isCircuitActive) return;
     lastFrameTime = 0;
     if (document.hidden) return;
     requestDraw();
