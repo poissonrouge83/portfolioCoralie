@@ -60,11 +60,18 @@ canvas {
 body {
   /* background: var(--color-text);
   color: var(--color-bg); */
+  position: relative;
   scroll-behavior: smooth;
   background: var(--bg-body);
   color: #0f172a;
   line-height: 1.6;
   overflow-x: hidden;
+}
+
+body > section,
+body > .footer {
+  position: relative;
+  z-index: 1;
 }
 
 section {
@@ -97,6 +104,209 @@ button:focus-visible {
   filter: blur(35px) contrast(130%);
 
   /* filter: blur(50px) contrast(140%) saturate(120%); */
+}
+
+/* ===================================================== */
+/* SCROLL CIRCUITS */
+/* ===================================================== */
+
+.circuit-scroll {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.72;
+  overflow: hidden;
+  --circuit-boost: 0;
+  --circuit-breath: 0;
+  --circuit-zone-main: 1;
+  --circuit-zone-ghost: 1;
+  --circuit-zone-accent: 1;
+  --circuit-zone-detail: 1;
+  --circuit-zone-node: 1;
+}
+
+.circuit-scroll-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.circuit-track,
+.circuit-energy {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: miter;
+  stroke-dasharray: var(--circuit-length, 1);
+  stroke-dashoffset: var(--circuit-length, 1);
+}
+
+.circuit-track {
+  stroke: url("#circuitTrackGradient");
+  stroke-width: 1.05;
+  opacity: calc(
+    (0.1 + var(--circuit-boost) * 0.08 + var(--circuit-breath) * 0.05) *
+      var(--circuit-zone-main)
+  );
+}
+
+.circuit-energy {
+  stroke: url("#circuitEnergyGradient");
+  stroke-width: calc(2px + var(--circuit-boost) * 0.4px);
+  filter: url("#circuitGlow");
+  opacity: calc(
+    (0.76 + var(--circuit-boost) * 0.14 + var(--circuit-breath) * 0.08) *
+      var(--circuit-zone-main)
+  );
+}
+
+.circuit-ghost-path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: url("#circuitGhostGradient");
+  stroke-width: calc(0.62px + var(--circuit-boost) * 0.08px);
+  stroke-dasharray: var(--circuit-length, 1);
+  stroke-dashoffset: var(--circuit-length, 1);
+  opacity: calc(
+    (0.18 + var(--circuit-boost) * 0.12 + var(--circuit-breath) * 0.12) *
+      var(--circuit-zone-ghost)
+  );
+  filter: url("#circuitGhostGlow");
+}
+
+.circuit-accent-path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: url("#circuitAccentGradient");
+  stroke-width: calc(0.82px + var(--circuit-boost) * 0.18px);
+  stroke-dasharray: var(--circuit-length, 1);
+  stroke-dashoffset: var(--circuit-length, 1);
+  opacity: calc(
+    (0.28 + var(--circuit-boost) * 0.24 + var(--circuit-breath) * 0.14) *
+      var(--circuit-zone-accent)
+  );
+  filter: url("#circuitGlow");
+}
+
+.circuit-detail-path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: url("#circuitDetailGradient");
+  stroke-width: calc(0.84px + var(--circuit-boost) * 0.12px);
+  stroke-dasharray: var(--circuit-length, 1);
+  stroke-dashoffset: var(--circuit-length, 1);
+  opacity: calc(
+    (0.5 + var(--circuit-boost) * 0.14 + var(--circuit-breath) * 0.08) *
+      var(--circuit-zone-detail)
+  );
+}
+
+.circuit-nodes circle {
+  fill: rgba(244, 253, 255, 0.96);
+  opacity: 0;
+  filter: url("#circuitNodeSupport");
+  stroke: rgba(111, 135, 148, 0.34);
+  stroke-width: 0.82;
+  paint-order: stroke fill;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: circuitNodePulse 4s ease-in-out infinite;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.circuit-nodes circle.is-lit {
+  opacity: calc((0.76 + var(--circuit-boost) * 0.16) * var(--circuit-zone-node));
+}
+
+.circuit-detail-node {
+  fill: rgba(235, 250, 255, 0.86);
+  opacity: 0;
+  filter: url("#circuitNodeSupport");
+  stroke: rgba(113, 137, 149, 0.28);
+  stroke-width: 0.66;
+  paint-order: stroke fill;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.circuit-detail-node.is-lit {
+  opacity: calc((0.54 + var(--circuit-boost) * 0.18) * var(--circuit-zone-node));
+}
+
+.circuit-micro-node {
+  fill: rgba(244, 252, 255, 0.82);
+  opacity: 0;
+  filter: url("#circuitNodeSupport");
+  stroke: rgba(116, 141, 152, 0.24);
+  stroke-width: 0.56;
+  paint-order: stroke fill;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.circuit-micro-node.is-lit {
+  opacity: calc((0.36 + var(--circuit-boost) * 0.14) * var(--circuit-zone-node));
+}
+
+.circuit-nodes circle.is-hot,
+.circuit-detail-node.is-hot,
+.circuit-micro-node.is-hot {
+  opacity: 1;
+  transform: scale(calc(1.2 + var(--circuit-breath) * 0.16));
+}
+
+.circuit-pulse {
+  opacity: 0;
+  transition: opacity 0.18s linear;
+}
+
+.circuit-pulse-shadow {
+  filter: url("#circuitPulseShadowBlur");
+  opacity: 0.72;
+}
+
+.circuit-pulse-veil {
+  filter: url("#circuitGlow");
+  opacity: 0.64;
+}
+
+.circuit-pulse-halo {
+  filter: url("#circuitPulseGlow");
+}
+
+.circuit-pulse-core {
+  filter: url("#circuitGlow");
+}
+
+.circuit-nodes circle:nth-child(even) {
+  animation-delay: 1.4s;
+}
+
+@keyframes circuitNodePulse {
+  0%,
+  100% {
+    transform: scale(0.86);
+  }
+  50% {
+    transform: scale(1.18);
+  }
 }
 
 /* ===================================================== */
@@ -442,7 +652,7 @@ button:focus-visible {
 }
 
 .hero-content h1 {
-  font-size: 60px;
+  font-size: 50px;
 }
 
 .hero-content h2 {
@@ -496,51 +706,6 @@ button:focus-visible {
   color: black;
   transform: translateY(-5px);
   box-shadow: 0 5px 15px rgba(56, 189, 248, 0.35);
-}
-
-.scroll-cue {
-  margin-top: 26px;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(15, 23, 42, 0.6);
-}
-
-.scroll-pill {
-  width: 24px;
-  height: 40px;
-  border-radius: 999px;
-  border: 1px solid rgba(15, 23, 42, 0.4);
-  position: relative;
-}
-
-.scroll-pill::after {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: var(--color-primary);
-  animation: scrollDot 2.2s ease-in-out infinite;
-}
-
-@keyframes scrollDot {
-  0%,
-  100% {
-    transform: translate(-50%, 0);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translate(-50%, 16px);
-    opacity: 1;
-  }
 }
 
 .btn {
@@ -1107,6 +1272,24 @@ button:focus-visible {
   margin-bottom: 8px;
 }
 
+@media (min-width: 901px) {
+  #memory-game.gallery {
+    padding-top: 18px;
+  }
+
+  .memory-kicker {
+    margin-bottom: 0;
+  }
+
+  .memory-note > p {
+    margin: 0;
+  }
+
+  .memory-note > p + p {
+    margin-top: 0;
+  }
+}
+
 #victory-message {
   position: fixed;
   top: 40%;
@@ -1243,6 +1426,42 @@ button:focus-visible {
 }
 
 @media (max-width: 900px) {
+  .circuit-scroll {
+    opacity: 0.32;
+  }
+
+  .circuit-track,
+  .circuit-energy {
+    stroke-width: 0.85;
+  }
+
+  .circuit-energy {
+    stroke-width: 1.7;
+  }
+
+  .circuit-ghost-path {
+    stroke-width: 0.54;
+    opacity: 0.2;
+  }
+
+  .circuit-accent-path {
+    stroke-width: 0.72;
+    opacity: 0.3;
+  }
+
+  .circuit-detail-path {
+    stroke-width: 0.72;
+    opacity: 0.62;
+  }
+
+  .circuit-micro-node.is-lit {
+    opacity: 0.32;
+  }
+
+  .circuit-detail-node.is-lit {
+    opacity: 0.54;
+  }
+
   .footer-inner {
     grid-template-columns: 1fr;
   }
@@ -1333,5 +1552,48 @@ button:focus-visible {
 @media (max-width: 550px) {
   .hero {
     padding-top: 20%;
+  }
+
+  .circuit-scroll {
+    opacity: 0.18;
+  }
+
+  .circuit-track {
+    stroke-width: 0.72;
+  }
+
+  .circuit-energy {
+    stroke-width: 1.42;
+  }
+
+  .circuit-ghost-path {
+    stroke-width: 0.46;
+    opacity: 0.14;
+  }
+
+  .circuit-accent-path {
+    stroke-width: 0.54;
+    opacity: 0.22;
+  }
+
+  .circuit-detail-path {
+    stroke-width: 0.56;
+    opacity: 0.46;
+  }
+
+  .circuit-detail-node.is-lit,
+  .circuit-nodes circle.is-lit,
+  .circuit-micro-node.is-lit {
+    opacity: 0.48;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circuit-nodes circle {
+    animation: none;
+  }
+
+  .circuit-energy {
+    transition: none;
   }
 }
