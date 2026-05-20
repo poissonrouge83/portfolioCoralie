@@ -1426,40 +1426,55 @@ button:focus-visible {
 }
 
 @media (max-width: 900px) {
+  .hero-content .img-moi img {
+    width: min(34vw, 240px);
+  }
+
   .circuit-scroll {
-    opacity: 0.32;
+    opacity: 0.46;
   }
 
-  .circuit-track,
-  .circuit-energy {
-    stroke-width: 0.85;
+  .circuit-track {
+    stroke-width: 1.16;
   }
 
   .circuit-energy {
-    stroke-width: 1.7;
+    stroke-width: 2.34;
   }
 
   .circuit-ghost-path {
-    stroke-width: 0.54;
-    opacity: 0.2;
+    stroke-width: 0.82;
+    opacity: 0.28;
   }
 
   .circuit-accent-path {
-    stroke-width: 0.72;
-    opacity: 0.3;
+    stroke-width: 1.04;
+    opacity: 0.42;
   }
 
   .circuit-detail-path {
-    stroke-width: 0.72;
-    opacity: 0.62;
+    stroke-width: 1.02;
+    opacity: 0.82;
+  }
+
+  .circuit-nodes circle.is-lit {
+    opacity: calc(0.88 * var(--circuit-zone-node));
   }
 
   .circuit-micro-node.is-lit {
-    opacity: 0.32;
+    opacity: calc(0.5 * var(--circuit-zone-node));
   }
 
   .circuit-detail-node.is-lit {
-    opacity: 0.54;
+    opacity: calc(0.68 * var(--circuit-zone-node));
+  }
+
+  .circuit-pulse-shadow {
+    opacity: 0.82;
+  }
+
+  .circuit-pulse-veil {
+    opacity: 0.74;
   }
 
   .footer-inner {
@@ -1554,37 +1569,52 @@ button:focus-visible {
     padding-top: 20%;
   }
 
+  .hero-content .img-moi img {
+    width: min(52vw, 260px);
+  }
+
   .circuit-scroll {
-    opacity: 0.18;
+    opacity: 0.5;
   }
 
   .circuit-track {
-    stroke-width: 0.72;
+    stroke-width: 1.18;
   }
 
   .circuit-energy {
-    stroke-width: 1.42;
+    stroke-width: 2.6;
   }
 
   .circuit-ghost-path {
-    stroke-width: 0.46;
-    opacity: 0.14;
+    stroke-width: 0.86;
+    opacity: 0.32;
   }
 
   .circuit-accent-path {
-    stroke-width: 0.54;
-    opacity: 0.22;
-  }
-
-  .circuit-detail-path {
-    stroke-width: 0.56;
+    stroke-width: 1.08;
     opacity: 0.46;
   }
 
+  .circuit-detail-path {
+    stroke-width: 1.04;
+    opacity: 0.86;
+  }
+
+  .circuit-nodes circle.is-lit {
+    opacity: calc(0.96 * var(--circuit-zone-node));
+  }
+
   .circuit-detail-node.is-lit,
-  .circuit-nodes circle.is-lit,
   .circuit-micro-node.is-lit {
-    opacity: 0.48;
+    opacity: calc(0.76 * var(--circuit-zone-node));
+  }
+
+  .circuit-pulse-shadow {
+    opacity: 0.9;
+  }
+
+  .circuit-pulse-veil {
+    opacity: 0.82;
   }
 }
 

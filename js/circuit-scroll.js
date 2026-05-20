@@ -1091,18 +1091,28 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       circuitMicroNodeLayer,
       "circuit-micro-node",
       [...leftAccentPath.nodes, ...rightAccentPath.nodes],
-      compact ? clamp(width * 0.0014, 1.3, 2.2) : clamp(width * 0.0018, 1.8, 2.8),
+      phone
+        ? clamp(width * 0.0038, 2.6, 4.6)
+        : compact
+          ? clamp(width * 0.0014, 1.3, 2.2)
+          : clamp(width * 0.0018, 1.8, 2.8),
     );
     circuitDetailNodes = setNodeCollection(
       circuitDetailNodeLayer,
       "circuit-detail-node",
       [...leftDetailPath.nodes, ...rightDetailPath.nodes],
-      compact ? clamp(width * 0.0018, 1.8, 2.8) : clamp(width * 0.0022, 2.2, 3.6),
+      phone
+        ? clamp(width * 0.0044, 3.2, 5.8)
+        : compact
+          ? clamp(width * 0.0018, 1.8, 2.8)
+          : clamp(width * 0.0022, 2.2, 3.6),
     );
     circuitPulseDescriptors = phone
       ? [
-          { pathType: "main", index: 0, seed: 0, speed: 0.048, halo: 18, core: 4.8, minVisible: 74 },
-          { pathType: "main", index: 1, seed: 520, speed: 0.044, halo: 18, core: 4.6, minVisible: 78 },
+          { pathType: "main", index: 0, seed: 0, speed: 0.05, halo: 24, core: 6.2, minVisible: 68 },
+          { pathType: "main", index: 1, seed: 520, speed: 0.046, halo: 23, core: 6, minVisible: 72 },
+          { pathType: "detail", index: 0, seed: 220, speed: 0.032, halo: 16, core: 4, minVisible: 58 },
+          { pathType: "detail", index: 1, seed: 860, speed: 0.03, halo: 15.4, core: 3.8, minVisible: 60 },
         ]
       : [
           { pathType: "main", index: 0, seed: 0, speed: 0.054, halo: 20, core: 5.1, minVisible: 88 },
@@ -1150,7 +1160,11 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       node.setAttribute("cy", position[1]);
       node.setAttribute(
         "r",
-        compact ? clamp(width * 0.0025, 2.6, 4.2) : clamp(width * 0.0032, 3.5, 5.5),
+        phone
+          ? clamp(width * 0.0062, 4.6, 7.4)
+          : compact
+            ? clamp(width * 0.0025, 2.6, 4.2)
+            : clamp(width * 0.0032, 3.5, 5.5),
       );
     });
   };
@@ -1245,9 +1259,13 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
         lighting.pulse;
       const boost = clamp(boostBase * (0.7 + breath * 0.3) + breath * 0.08, 0, 1);
       const haloRadius =
-        descriptor.halo * (isCompactViewport ? 0.84 : 1) * (1 + boost * 0.18);
+        descriptor.halo *
+        (isPhoneViewport ? 1.12 : isCompactViewport ? 0.9 : 1) *
+        (1 + boost * 0.18);
       const coreRadius =
-        descriptor.core * (isCompactViewport ? 0.9 : 1) * (1 + boost * 0.12);
+        descriptor.core *
+        (isPhoneViewport ? 1.08 : isCompactViewport ? 0.94 : 1) *
+        (1 + boost * 0.12);
       const shadowRadius = haloRadius * 1.2;
       const veilRadius = haloRadius * 0.98;
 
