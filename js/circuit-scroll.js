@@ -12,27 +12,23 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   let exchangeBoostZones = [];
   let circuitSectionProfiles = [];
   let pauseStartY = 0;
-  let pauseEndY = 0;
   let preProjectLengths = [0, 0];
-  let preProjectGhostLengths = [0, 0];
-  let preProjectDetailLengths = [0, 0];
-  let preProjectAccentLengths = [0, 0];
   let hasStartedScroll = window.scrollY > 0;
   let currentRevealY = 0;
   let targetRevealY = 0;
   let animationFrameId = 0;
+  let animationTimeoutId = 0;
   let lastFrameTime = 0;
   let circuitPulseClock = 0;
   let isCompactViewport = false;
-  let isPhoneViewport = false;
-  let circuitDetailPaths = [];
-  let circuitDetailNodes = [];
-  let circuitGhostPaths = [];
-  let circuitAccentPaths = [];
-  let circuitMicroNodes = [];
-  let circuitPulseSprites = [];
-  let circuitPulseDescriptors = [];
   let isCircuitActive = false;
+  let lineEntryGroups = {
+    tracks: [],
+    energy: [],
+  };
+  let circuitNodeEntries = [];
+  let idleMotionUntil = 0;
+  const layerValueCache = Object.create(null);
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
   const createSvgElement = (tagName, className) => {
@@ -49,13 +45,6 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     circuitSvg.insertBefore(group, anchor || null);
     return group;
   };
-  const circuitGhostLayer = ensureSvgGroup("circuit-ghosts");
-  const circuitDetailLayer = ensureSvgGroup("circuit-details");
-  const circuitAccentLayer = ensureSvgGroup("circuit-accents");
-  const circuitDetailNodeLayer = ensureSvgGroup("circuit-detail-nodes");
-  const circuitMicroNodeLayer = ensureSvgGroup("circuit-micro-nodes");
-  const circuitPulseLayer = ensureSvgGroup("circuit-pulses", null);
-
   const smoothStep = (start, end, value) => {
     const progress = clamp((value - start) / (end - start), 0, 1);
     return progress * progress * (3 - 2 * progress);
@@ -122,51 +111,76 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     return [...layer.querySelectorAll(`.${className}`)];
   };
 
-  const setNodeCollection = (layer, className, positions, radius) => {
-    layer.replaceChildren(
-      ...positions.map(([x, y]) => {
-        const node = createSvgElement("circle", className);
-        node.setAttribute("cx", Math.round(x));
-        node.setAttribute("cy", Math.round(y));
-        node.setAttribute("r", radius);
-        return node;
-      }),
-    );
-
-    return [...layer.querySelectorAll(`.${className}`)];
-  };
-
-  const setPulseCollection = (layer, descriptors) => {
-    layer.replaceChildren(
-      ...descriptors.map(() => {
-        const group = createSvgElement("g", "circuit-pulse");
-        const shadow = createSvgElement("circle", "circuit-pulse-shadow");
-        const veil = createSvgElement("circle", "circuit-pulse-veil");
-        const halo = createSvgElement("circle", "circuit-pulse-halo");
-        const core = createSvgElement("circle", "circuit-pulse-core");
-
-        shadow.setAttribute("fill", "url(#circuitPulseShadow)");
-        veil.setAttribute("fill", "url(#circuitPulseVeil)");
-        halo.setAttribute("fill", "url(#circuitPulseHalo)");
-        core.setAttribute("fill", "url(#circuitPulseCore)");
-        group.append(shadow, veil, halo, core);
-        return group;
-      }),
-    );
-
-    return [...layer.querySelectorAll(".circuit-pulse")].map((group) => ({
-      group,
-      shadow: group.querySelector(".circuit-pulse-shadow"),
-      veil: group.querySelector(".circuit-pulse-veil"),
-      halo: group.querySelector(".circuit-pulse-halo"),
-      core: group.querySelector(".circuit-pulse-core"),
-    }));
-  };
-
   const measurePathLength = (d) => {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", d);
     return path.getTotalLength();
+  };
+
+  const setLayerValue = (name, value) => {
+    if (layerValueCache[name] === value) return;
+    circuitLayer.style.setProperty(name, value);
+    layerValueCache[name] = value;
+  };
+
+  const createLineEntries = (elements, preProjectLengths) =>
+    elements.map((line, index) => {
+      const length = line.getTotalLength();
+      line.style.setProperty("--circuit-length", length);
+      line.style.strokeDasharray = length;
+      line.style.strokeDashoffset = length;
+
+      return {
+        line,
+        length,
+        preProjectLength: preProjectLengths[index] || 0,
+        lastOffset: length,
+      };
+    });
+
+  const setLineVisibleLength = (entry, visibleLength) => {
+    const offset = entry.length - visibleLength;
+    if (Math.abs(offset - entry.lastOffset) < 0.2) return;
+    entry.line.style.strokeDashoffset = offset;
+    entry.lastOffset = offset;
+  };
+
+  const syncNodeEntries = () => {
+    circuitNodeEntries = circuitNodes.map((node) => ({
+      node,
+      y: Number(node.getAttribute("cy")) || 0,
+      lit: node.classList.contains("is-lit"),
+      hot: node.classList.contains("is-hot"),
+    }));
+  };
+
+  const markCircuitActivity = () => {
+    idleMotionUntil = performance.now() + 1400;
+  };
+
+  const clearScheduledAnimation = () => {
+    if (animationTimeoutId) {
+      clearTimeout(animationTimeoutId);
+      animationTimeoutId = 0;
+    }
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = 0;
+    }
+  };
+
+  const scheduleAnimation = (delay = 0) => {
+    if (!isCircuitActive || animationFrameId || animationTimeoutId) return;
+
+    if (delay <= 0) {
+      animationFrameId = requestAnimationFrame(animateCircuits);
+      return;
+    }
+
+    animationTimeoutId = window.setTimeout(() => {
+      animationTimeoutId = 0;
+      animationFrameId = requestAnimationFrame(animateCircuits);
+    }, delay);
   };
 
   const collectSectionProfiles = () =>
@@ -175,11 +189,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
         selector: "#home",
         range: 0.76,
         main: 0.72,
-        ghost: 0.78,
-        accent: 0.68,
-        detail: 0.72,
         node: 0.82,
-        pulse: 0.76,
         boost: 0.44,
         breath: 0.54,
       },
@@ -187,11 +197,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
         selector: "#about",
         range: 0.72,
         main: 0.86,
-        ghost: 0.82,
-        accent: 0.84,
-        detail: 0.88,
         node: 0.9,
-        pulse: 0.88,
         boost: 0.66,
         breath: 0.68,
       },
@@ -199,11 +205,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
         selector: "#process",
         range: 0.7,
         main: 0.98,
-        ghost: 0.88,
-        accent: 0.98,
-        detail: 0.94,
         node: 0.98,
-        pulse: 0.98,
         boost: 0.82,
         breath: 0.8,
       },
@@ -211,11 +213,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
         selector: ".stats",
         range: 0.68,
         main: 1,
-        ghost: 0.9,
-        accent: 1,
-        detail: 0.98,
         node: 1,
-        pulse: 1,
         boost: 0.88,
         breath: 0.84,
       },
@@ -223,11 +221,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
         selector: "#skills",
         range: 0.6,
         main: 0.58,
-        ghost: 0.52,
-        accent: 0.48,
-        detail: 0.54,
         node: 0.66,
-        pulse: 0.54,
         boost: 0.28,
         breath: 0.42,
       },
@@ -248,11 +242,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   const getSectionLighting = (focusY) => {
     const fallback = {
       main: 0.78,
-      ghost: 0.72,
-      accent: 0.74,
-      detail: 0.76,
       node: 0.82,
-      pulse: 0.8,
       boost: 0.48,
       breath: 0.58,
     };
@@ -262,11 +252,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     let total = 0;
     const weighted = {
       main: 0,
-      ghost: 0,
-      accent: 0,
-      detail: 0,
       node: 0,
-      pulse: 0,
       boost: 0,
       breath: 0,
     };
@@ -285,11 +271,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
 
       total += strength;
       weighted.main += profile.main * strength;
-      weighted.ghost += profile.ghost * strength;
-      weighted.accent += profile.accent * strength;
-      weighted.detail += profile.detail * strength;
       weighted.node += profile.node * strength;
-      weighted.pulse += profile.pulse * strength;
       weighted.boost += profile.boost * strength;
       weighted.breath += profile.breath * strength;
     });
@@ -298,11 +280,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
 
     return {
       main: weighted.main / total,
-      ghost: weighted.ghost / total,
-      accent: weighted.accent / total,
-      detail: weighted.detail / total,
       node: weighted.node / total,
-      pulse: weighted.pulse / total,
       boost: weighted.boost / total,
       breath: weighted.breath / total,
     };
@@ -313,388 +291,6 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       ? 0
       : (Math.sin(circuitPulseClock * (isCompactViewport ? 0.0019 : 0.00145)) + 1) / 2;
 
-  const addCircuitTap = (segments, x, y, length, direction) => {
-    segments.push(
-      `M ${Math.round(x)} ${Math.round(y)}`,
-      `H ${Math.round(x + length * direction)}`,
-    );
-  };
-
-  const addCircuitBranch = (
-    segments,
-    nodes,
-    x,
-    y,
-    reach,
-    drop,
-    tail,
-    direction,
-  ) => {
-    const elbowX = x + reach * direction;
-    const endY = y + drop;
-    const endX = elbowX + tail * direction;
-
-    segments.push(
-      `M ${Math.round(x)} ${Math.round(y)}`,
-      `H ${Math.round(elbowX)}`,
-      `V ${Math.round(endY)}`,
-      `H ${Math.round(endX)}`,
-    );
-    nodes.push([endX, endY]);
-  };
-
-  const addCircuitDetailSpan = (
-    segments,
-    nodes,
-    x,
-    direction,
-    startY,
-    endY,
-    width,
-    emphasis = 1,
-    invertPattern = false,
-    compact = false,
-  ) => {
-    const span = endY - startY;
-    if (span < 56) return;
-
-    const shortReach = clamp(
-      width * (compact ? 0.01 : 0.013) * emphasis,
-      compact ? 8 : 12,
-      compact ? 16 : 20,
-    );
-    const mediumReach = clamp(
-      width * (compact ? 0.014 : 0.018) * emphasis,
-      compact ? 14 : 18,
-      compact ? 22 : 30,
-    );
-    const longReach = clamp(
-      width * (compact ? 0.018 : 0.024) * emphasis,
-      compact ? 18 : 24,
-      compact ? 28 : 40,
-    );
-    const tapShort = clamp(width * (compact ? 0.0045 : 0.0065), 4, compact ? 8 : 10);
-    const tapLong = clamp(width * (compact ? 0.006 : 0.009), 6, compact ? 10 : 14);
-    const dropSmall = clamp(
-      width * (compact ? 0.0095 : 0.012),
-      compact ? 9 : 12,
-      compact ? 15 : 20,
-    );
-    const dropMedium = clamp(
-      width * (compact ? 0.014 : 0.018),
-      compact ? 14 : 18,
-      compact ? 22 : 28,
-    );
-    const branchPattern = compact
-      ? span > 220
-        ? [
-            [0.24, shortReach, dropSmall, tapShort],
-            [0.56, longReach * 0.86, dropMedium, tapLong * 0.82],
-            [0.82, mediumReach, dropSmall, tapShort * 0.9],
-          ]
-        : [
-            [0.32, shortReach, dropSmall, tapShort],
-            [0.72, mediumReach, dropMedium * 0.9, tapShort],
-          ]
-      : span > 260
-        ? [
-            [0.16, shortReach, dropSmall, tapShort],
-            [0.35, longReach, dropMedium, tapLong],
-            [0.61, mediumReach, dropSmall, tapShort],
-            [0.82, longReach * 0.78, dropMedium * 0.92, tapShort],
-          ]
-        : [
-            [0.22, shortReach, dropSmall, tapShort],
-            [0.56, longReach * 0.88, dropMedium, tapLong * 0.88],
-            [0.8, mediumReach, dropSmall, tapShort],
-          ];
-
-    addCircuitTap(
-      segments,
-      x,
-      startY + span * (compact ? 0.12 : 0.08),
-      tapShort * 0.92,
-      direction,
-    );
-    if (!compact) {
-      addCircuitTap(segments, x, startY + span * 0.72, tapLong * 0.72, direction);
-    }
-
-    branchPattern.forEach(([ratio, reach, drop, tail], index) => {
-      const branchDirection =
-        direction * ((index + Number(invertPattern)) % 2 === 0 ? 1 : -1);
-
-      addCircuitBranch(
-        segments,
-        nodes,
-        x,
-        startY + span * ratio,
-        reach,
-        drop,
-        tail,
-        branchDirection,
-      );
-    });
-  };
-
-  const buildCircuitDetailPath = ({
-    x,
-    targetX,
-    direction,
-    aboutProcessY,
-    processStatsY,
-    statsSkillsY,
-    projectsResumeY,
-    bridgeDrop,
-    width,
-    compact,
-  }) => {
-    const afterFirstBridgeY = aboutProcessY + bridgeDrop;
-    const afterSecondBridgeY = processStatsY + bridgeDrop;
-    const segments = [];
-    const nodes = [];
-
-    addCircuitDetailSpan(
-      segments,
-      nodes,
-      x,
-      direction,
-      20,
-      aboutProcessY * 0.92,
-      width,
-      1,
-      false,
-      compact,
-    );
-    addCircuitDetailSpan(
-      segments,
-      nodes,
-      targetX,
-      -direction,
-      afterFirstBridgeY + 20,
-      processStatsY - 12,
-      width,
-      0.94,
-      true,
-      compact,
-    );
-    addCircuitDetailSpan(
-      segments,
-      nodes,
-      x,
-      direction,
-      afterSecondBridgeY + 16,
-      statsSkillsY - 10,
-      width,
-      1.08,
-      true,
-      compact,
-    );
-    const preProjectPath = segments.join(" ");
-
-    return {
-      fullPath: preProjectPath,
-      preProjectPath,
-      nodes,
-    };
-  };
-
-  const addAccentRun = (segments, nodes, x, y, vertical, lip, direction) => {
-    const endY = y + vertical;
-    const lipX = x + lip * direction;
-
-    segments.push(
-      `M ${Math.round(x)} ${Math.round(y)} V ${Math.round(endY)}`,
-      `M ${Math.round(x)} ${Math.round(endY)} H ${Math.round(lipX)}`,
-    );
-    nodes.push([lipX, endY]);
-  };
-
-  const addAccentBridge = (segments, nodes, x1, x2, y) => {
-    const left = Math.min(x1, x2);
-    const right = Math.max(x1, x2);
-    const inset = (right - left) * 0.4;
-    const fromX = left + inset;
-    const toX = right - inset;
-
-    segments.push(`M ${Math.round(fromX)} ${Math.round(y)} H ${Math.round(toX)}`);
-    nodes.push([toX, y]);
-  };
-
-  const addGhostFragment = (segments, x, y, reach, drop, direction) => {
-    segments.push(
-      `M ${Math.round(x)} ${Math.round(y)}`,
-      `H ${Math.round(x + reach * direction)}`,
-      `V ${Math.round(y + drop)}`,
-    );
-  };
-
-  const addGhostBridge = (segments, x1, x2, y, offset) => {
-    const span = x2 - x1;
-    const firstX = x1 + span * 0.34;
-    const secondX = x1 + span * 0.66;
-
-    segments.push(
-      `M ${Math.round(firstX)} ${Math.round(y)}`,
-      `H ${Math.round(secondX)}`,
-      `V ${Math.round(y + offset)}`,
-    );
-  };
-
-  const buildCircuitAccentPath = ({
-    x,
-    targetX,
-    direction,
-    aboutProcessY,
-    processStatsY,
-    statsSkillsY,
-    projectsResumeY,
-    bridgeDrop,
-    width,
-    compact,
-    phone,
-  }) => {
-    const afterFirstBridgeY = aboutProcessY + bridgeDrop;
-    const afterSecondBridgeY = processStatsY + bridgeDrop;
-    const afterThirdBridgeY = statsSkillsY + bridgeDrop;
-    const middleSpan = Math.max(processStatsY - afterFirstBridgeY, 1);
-    const betweenSecondThirdSpan = Math.max(statsSkillsY - afterSecondBridgeY, 1);
-    const lowerSpan = Math.max(documentHeight - projectsResumeY, 1);
-    const accentShort = clamp(width * (compact ? 0.014 : 0.018), compact ? 12 : 16, compact ? 22 : 28);
-    const accentLong = clamp(width * (compact ? 0.02 : 0.026), compact ? 18 : 24, compact ? 30 : 42);
-    const accentLip = clamp(width * (compact ? 0.008 : 0.011), compact ? 7 : 9, compact ? 12 : 18);
-    const segments = [];
-    const nodes = [];
-
-    addAccentRun(
-      segments,
-      nodes,
-      x,
-      aboutProcessY * (compact ? 0.18 : 0.12),
-      accentLong,
-      accentLip,
-      direction,
-    );
-
-    if (!phone) {
-      addAccentBridge(
-        segments,
-        nodes,
-        x,
-        targetX,
-        aboutProcessY + bridgeDrop * 0.46,
-      );
-    }
-
-    addAccentRun(
-      segments,
-      nodes,
-      targetX,
-      afterFirstBridgeY + middleSpan * (compact ? 0.16 : 0.12),
-      accentShort,
-      accentLip * 1.1,
-      -direction,
-    );
-
-    addAccentRun(
-      segments,
-      nodes,
-      x,
-      afterSecondBridgeY + betweenSecondThirdSpan * (compact ? 0.54 : 0.48),
-      accentLong,
-      accentLip,
-      direction,
-    );
-
-      if (!phone) {
-        addAccentBridge(
-          segments,
-          nodes,
-          x,
-          targetX,
-          statsSkillsY + bridgeDrop * 0.4,
-        );
-      }
-    const preProjectPath = segments.join(" ");
-
-    return {
-      fullPath: preProjectPath,
-      preProjectPath,
-      nodes,
-    };
-  };
-
-  const buildCircuitGhostPath = ({
-    x,
-    targetX,
-    direction,
-    aboutProcessY,
-    processStatsY,
-    statsSkillsY,
-    projectsResumeY,
-    bridgeDrop,
-    width,
-    compact,
-    phone,
-  }) => {
-    const afterFirstBridgeY = aboutProcessY + bridgeDrop;
-    const afterSecondBridgeY = processStatsY + bridgeDrop;
-    const middleSpan = Math.max(processStatsY - afterFirstBridgeY, 1);
-    const betweenSecondThirdSpan = Math.max(statsSkillsY - afterSecondBridgeY, 1);
-    const lowerSpan = Math.max(documentHeight - projectsResumeY, 1);
-    const shortReach = clamp(width * (compact ? 0.008 : 0.012), compact ? 8 : 12, compact ? 14 : 20);
-    const longReach = clamp(width * (compact ? 0.012 : 0.018), compact ? 12 : 18, compact ? 22 : 30);
-    const shortDrop = clamp(width * (compact ? 0.008 : 0.011), compact ? 8 : 11, compact ? 13 : 18);
-    const longDrop = clamp(width * (compact ? 0.012 : 0.016), compact ? 12 : 16, compact ? 20 : 24);
-    const segments = [];
-
-    addGhostFragment(
-      segments,
-      x,
-      aboutProcessY * (compact ? 0.16 : 0.12),
-      shortReach,
-      shortDrop,
-      -direction,
-    );
-    addGhostFragment(
-      segments,
-      x,
-      aboutProcessY * (compact ? 0.62 : 0.58),
-      longReach,
-      longDrop,
-      direction,
-    );
-    if (!phone) {
-      addGhostBridge(segments, x, targetX, aboutProcessY + bridgeDrop * 0.72, shortDrop);
-    }
-
-    addGhostFragment(
-      segments,
-      targetX,
-      afterFirstBridgeY + middleSpan * (compact ? 0.34 : 0.26),
-      shortReach,
-      shortDrop,
-      direction,
-    );
-    addGhostFragment(
-      segments,
-      x,
-      afterSecondBridgeY + betweenSecondThirdSpan * (compact ? 0.58 : 0.5),
-      longReach,
-      longDrop,
-      -direction,
-    );
-    if (!phone) {
-      addGhostBridge(segments, x, targetX, statsSkillsY + bridgeDrop * 0.64, shortDrop);
-    }
-    const preProjectPath = segments.join(" ");
-
-    return {
-      fullPath: preProjectPath,
-      preProjectPath,
-    };
-  };
-
   const buildSidePath = ({
     x,
     targetX,
@@ -702,11 +298,9 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     aboutProcessY,
     processStatsY,
     statsSkillsY,
-    projectsResumeY,
     bridgeDrop,
     width,
     compact,
-    phone,
   }) => {
     const small = clamp(
       width * (compact ? 0.014 : 0.018),
@@ -737,7 +331,6 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     const afterSecondBridgeY = processStatsY + bridgeDrop;
     const middleSpan = Math.max(processStatsY - afterFirstBridgeY, 1);
     const betweenSecondThirdSpan = Math.max(statsSkillsY - afterSecondBridgeY, 1);
-    const lowerSpan = Math.max(documentHeight - projectsResumeY, 1);
     const bridgeProfiles = compact
       ? [
           { xRatios: [0.22, 0.54, 0.82], yRatios: [0.2, 0.58] },
@@ -802,20 +395,18 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
         segments,
         targetX,
         afterFirstBridgeY + middleSpan * 0.38,
-        phone ? small : medium,
+        medium,
         mediumDrop,
         direction,
       );
-      if (!phone) {
-        addCircuitJog(
-          segments,
-          targetX,
-          afterFirstBridgeY + middleSpan * 0.74,
-          small,
-          shortDrop,
-          -direction,
-        );
-      }
+      addCircuitJog(
+        segments,
+        targetX,
+        afterFirstBridgeY + middleSpan * 0.74,
+        small,
+        shortDrop,
+        -direction,
+      );
     } else {
       addCircuitJog(
         segments,
@@ -846,16 +437,14 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
         longDrop,
         -direction,
       );
-      if (!phone) {
-        addCircuitJog(
-          segments,
-          x,
-          afterSecondBridgeY + betweenSecondThirdSpan * 0.72,
-          small,
-          shortDrop,
-          direction,
-        );
-      }
+      addCircuitJog(
+        segments,
+        x,
+        afterSecondBridgeY + betweenSecondThirdSpan * 0.72,
+        small,
+        shortDrop,
+        direction,
+      );
     } else {
       addCircuitJog(
         segments,
@@ -886,29 +475,19 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     documentHeight = document.documentElement.scrollHeight;
     const width = document.documentElement.clientWidth;
     const compact = width <= 900;
-    const phone = width <= 640;
     isCompactViewport = compact;
-    isPhoneViewport = phone;
-    const sideOffset = phone
-      ? clamp(width * 0.048, 16, 24)
-      : compact
-        ? clamp(width * 0.058, 24, 40)
-        : clamp(width * 0.09, 58, 118);
-    const bridgeDrop = phone
-      ? clamp(width * 0.06, 22, 30)
-      : compact
-        ? clamp(width * 0.052, 28, 42)
-        : clamp(width * 0.045, 34, 58);
+    const sideOffset = compact
+      ? clamp(width * 0.058, 24, 40)
+      : clamp(width * 0.09, 58, 118);
+    const bridgeDrop = compact
+      ? clamp(width * 0.052, 28, 42)
+      : clamp(width * 0.045, 34, 58);
     const leftX = sideOffset;
     const rightX = width - sideOffset;
     const aboutProcessY = getGapCenter("#about", "#process", 0.24);
     const processStatsY = getGapCenter("#process", ".stats", 0.42);
     const statsSkillsY = getGapCenter(".stats", "#skills", 0.52);
     circuitSectionProfiles = collectSectionProfiles();
-    const projectsSection = document.querySelector("#projects");
-    const projectsResumeY = projectsSection
-      ? projectsSection.offsetTop + Math.min(projectsSection.offsetHeight * 0.12, 110)
-      : documentHeight * 0.72;
     const exchangeBoostPadding = window.innerHeight * (compact ? 0.16 : 0.22);
     const leftBridgeX = leftX + (rightX - leftX) * 0.28;
     const rightBridgeX = rightX + (leftX - rightX) * 0.28;
@@ -917,8 +496,6 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     const leftThirdBridgeX = leftX + (rightX - leftX) * 0.28;
     const rightThirdBridgeX = rightX + (leftX - rightX) * 0.28;
     pauseStartY = statsSkillsY + bridgeDrop;
-    pauseEndY = projectsResumeY;
-
     exchangeBoostZones = [
       [
         clamp((aboutProcessY - exchangeBoostPadding) / documentHeight, 0, 1),
@@ -953,11 +530,9 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       aboutProcessY,
       processStatsY,
       statsSkillsY,
-      projectsResumeY,
       bridgeDrop,
       width,
       compact,
-      phone,
     });
 
     const rightPath = buildSidePath({
@@ -967,108 +542,13 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       aboutProcessY,
       processStatsY,
       statsSkillsY,
-      projectsResumeY,
-      bridgeDrop,
-      width,
-      compact,
-      phone,
-    });
-    const leftAccentPath = buildCircuitAccentPath({
-      x: leftX,
-      targetX: rightX,
-      direction: 1,
-      aboutProcessY,
-      processStatsY,
-      statsSkillsY,
-      projectsResumeY,
-      bridgeDrop,
-      width,
-      compact,
-      phone,
-    });
-    const rightAccentPath = buildCircuitAccentPath({
-      x: rightX,
-      targetX: leftX,
-      direction: -1,
-      aboutProcessY,
-      processStatsY,
-      statsSkillsY,
-      projectsResumeY,
-      bridgeDrop,
-      width,
-      compact,
-      phone,
-    });
-    const leftGhostPath = buildCircuitGhostPath({
-      x: leftX,
-      targetX: rightX,
-      direction: 1,
-      aboutProcessY,
-      processStatsY,
-      statsSkillsY,
-      projectsResumeY,
-      bridgeDrop,
-      width,
-      compact,
-      phone,
-    });
-    const rightGhostPath = buildCircuitGhostPath({
-      x: rightX,
-      targetX: leftX,
-      direction: -1,
-      aboutProcessY,
-      processStatsY,
-      statsSkillsY,
-      projectsResumeY,
-      bridgeDrop,
-      width,
-      compact,
-      phone,
-    });
-    const leftDetailPath = buildCircuitDetailPath({
-      x: leftX,
-      targetX: rightX,
-      direction: 1,
-      aboutProcessY,
-      processStatsY,
-      statsSkillsY,
-      projectsResumeY,
       bridgeDrop,
       width,
       compact,
     });
-    const rightDetailPath = buildCircuitDetailPath({
-      x: rightX,
-      targetX: leftX,
-      direction: -1,
-      aboutProcessY,
-      processStatsY,
-      statsSkillsY,
-      projectsResumeY,
-      bridgeDrop,
-      width,
-      compact,
-    });
-
     preProjectLengths = [
       measurePathLength(leftPath.preProjectPath),
       measurePathLength(rightPath.preProjectPath),
-    ];
-    preProjectGhostLengths = [
-      leftGhostPath.preProjectPath ? measurePathLength(leftGhostPath.preProjectPath) : 0,
-      rightGhostPath.preProjectPath ? measurePathLength(rightGhostPath.preProjectPath) : 0,
-    ];
-    preProjectAccentLengths = [
-      leftAccentPath.preProjectPath ? measurePathLength(leftAccentPath.preProjectPath) : 0,
-      rightAccentPath.preProjectPath
-        ? measurePathLength(rightAccentPath.preProjectPath)
-        : 0,
-    ];
-    preProjectDetailLengths = [
-      leftDetailPath.preProjectPath ? measurePathLength(leftDetailPath.preProjectPath) : 0,
-      rightDetailPath.preProjectPath
-        ? measurePathLength(rightDetailPath.preProjectPath)
-        : 0,
     ];
 
     circuitLayer.style.height = `${documentHeight}px`;
@@ -1077,62 +557,6 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     circuitTracks[1].setAttribute("d", rightPath.fullPath);
     circuitLines[0].setAttribute("d", leftPath.fullPath);
     circuitLines[1].setAttribute("d", rightPath.fullPath);
-    circuitGhostPaths = setPathCollection(circuitGhostLayer, "circuit-ghost-path", [
-      leftGhostPath.fullPath,
-      rightGhostPath.fullPath,
-    ]);
-    circuitAccentPaths = setPathCollection(circuitAccentLayer, "circuit-accent-path", [
-      leftAccentPath.fullPath,
-      rightAccentPath.fullPath,
-    ]);
-    circuitDetailPaths = setPathCollection(circuitDetailLayer, "circuit-detail-path", [
-      leftDetailPath.fullPath,
-      rightDetailPath.fullPath,
-    ]);
-    circuitMicroNodes = setNodeCollection(
-      circuitMicroNodeLayer,
-      "circuit-micro-node",
-      [...leftAccentPath.nodes, ...rightAccentPath.nodes],
-      phone
-        ? clamp(width * 0.0038, 2.6, 4.6)
-        : compact
-          ? clamp(width * 0.0014, 1.3, 2.2)
-          : clamp(width * 0.0018, 1.8, 2.8),
-    );
-    circuitDetailNodes = setNodeCollection(
-      circuitDetailNodeLayer,
-      "circuit-detail-node",
-      [...leftDetailPath.nodes, ...rightDetailPath.nodes],
-      phone
-        ? clamp(width * 0.0044, 3.2, 5.8)
-        : compact
-          ? clamp(width * 0.0018, 1.8, 2.8)
-          : clamp(width * 0.0022, 2.2, 3.6),
-    );
-    circuitPulseDescriptors = phone
-      ? [
-          { pathType: "main", index: 0, seed: 0, speed: 0.05, halo: 24, core: 6.2, minVisible: 68 },
-          { pathType: "main", index: 1, seed: 520, speed: 0.046, halo: 23, core: 6, minVisible: 72 },
-          { pathType: "detail", index: 0, seed: 220, speed: 0.032, halo: 16, core: 4, minVisible: 58 },
-          { pathType: "detail", index: 1, seed: 860, speed: 0.03, halo: 15.4, core: 3.8, minVisible: 60 },
-        ]
-      : [
-          { pathType: "main", index: 0, seed: 0, speed: 0.054, halo: 20, core: 5.1, minVisible: 88 },
-          { pathType: "main", index: 1, seed: 620, speed: 0.05, halo: 19, core: 4.9, minVisible: 92 },
-          { pathType: "detail", index: 0, seed: 220, speed: 0.034, halo: 13, core: 3.2, minVisible: 68 },
-          { pathType: "detail", index: 1, seed: 860, speed: 0.032, halo: 13, core: 3.1, minVisible: 70 },
-        ];
-    circuitPulseSprites = setPulseCollection(circuitPulseLayer, circuitPulseDescriptors);
-    circuitPulseSprites.forEach((pulse, index) => {
-      const descriptor = circuitPulseDescriptors[index];
-      if (!descriptor) return;
-
-      pulse.shadow.setAttribute("r", (descriptor.halo * 1.18).toFixed(2));
-      pulse.veil.setAttribute("r", (descriptor.halo * 0.96).toFixed(2));
-      pulse.halo.setAttribute("r", descriptor.halo);
-      pulse.core.setAttribute("r", descriptor.core);
-    });
-
     const nodePositions = [
       [leftX, aboutProcessY * 0.28],
       [leftX, aboutProcessY],
@@ -1162,30 +586,20 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       node.setAttribute("cy", position[1]);
       node.setAttribute(
         "r",
-        phone
-          ? clamp(width * 0.0062, 4.6, 7.4)
-          : compact
-            ? clamp(width * 0.0025, 2.6, 4.2)
-            : clamp(width * 0.0032, 3.5, 5.5),
+        compact
+          ? clamp(width * 0.0025, 2.6, 4.2)
+          : clamp(width * 0.0032, 3.5, 5.5),
       );
     });
+
+    syncNodeEntries();
   };
 
   const prepareLines = () => {
-    [
-      ...circuitTracks,
-      ...circuitLines,
-      ...circuitGhostPaths,
-      ...circuitAccentPaths,
-      ...circuitDetailPaths,
-    ].forEach(
-      (line) => {
-        const length = line.getTotalLength();
-        line.style.setProperty("--circuit-length", length);
-        line.style.strokeDasharray = length;
-        line.style.strokeDashoffset = length;
-      },
-    );
+    lineEntryGroups = {
+      tracks: createLineEntries(circuitTracks, preProjectLengths),
+      energy: createLineEntries(circuitLines, preProjectLengths),
+    };
   };
 
   const getTargetRevealY = () => {
@@ -1209,80 +623,27 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     return clamp(baseProgress + exchangeBoost, 0, 1);
   };
 
-  const getVisibleLength = (totalLength, preProjectLength, revealY) => {
-    if (reducedMotion.matches || revealY >= documentHeight) return totalLength;
-    if (revealY <= 0) return 0;
+  const getVisibleLengthResolver = (revealY) => {
+    if (reducedMotion.matches || revealY >= documentHeight) {
+      return (entry) => entry.length;
+    }
+
+    if (revealY <= 0) {
+      return () => 0;
+    }
+
+    if (revealY >= pauseStartY) {
+      return (entry) => entry.preProjectLength;
+    }
 
     const boostedProgress = getBoostedProgress(revealY);
     const pauseStartProgress = getBoostedProgress(pauseStartY);
+    const prePauseProgress =
+      pauseStartProgress > 0
+        ? clamp(boostedProgress / pauseStartProgress, 0, 1)
+        : 0;
 
-    if (revealY < pauseStartY) {
-      const prePauseProgress =
-        pauseStartProgress > 0
-          ? clamp(boostedProgress / pauseStartProgress, 0, 1)
-          : 0;
-
-      return preProjectLength * prePauseProgress;
-    }
-
-    return preProjectLength;
-  };
-
-  const renderPulses = (
-    mainVisibleLengths,
-    detailVisibleLengths,
-    sectionBoost,
-    breath,
-    lighting,
-  ) => {
-    circuitPulseSprites.forEach((pulse, index) => {
-      const descriptor = circuitPulseDescriptors[index];
-      if (!descriptor) return;
-
-      const pathCollection =
-        descriptor.pathType === "detail" ? circuitDetailPaths : circuitLines;
-      const visibleLengths =
-        descriptor.pathType === "detail" ? detailVisibleLengths : mainVisibleLengths;
-      const path = pathCollection[descriptor.index];
-      const visibleLength = visibleLengths[descriptor.index] || 0;
-
-      if (!path || visibleLength <= descriptor.minVisible || !hasStartedScroll) {
-        pulse.group.style.opacity = "0";
-        return;
-      }
-
-      const pulseStart = descriptor.pathType === "detail" ? 12 : 18;
-      const usableLength = Math.max(visibleLength - pulseStart, 1);
-      const travel =
-        pulseStart + ((circuitPulseClock * descriptor.speed + descriptor.seed) % usableLength);
-      const point = path.getPointAtLength(clamp(travel, 0, visibleLength));
-      const boostBase =
-        (descriptor.pathType === "detail" ? sectionBoost * 0.82 : sectionBoost) *
-        lighting.pulse;
-      const boost = clamp(boostBase * (0.7 + breath * 0.3) + breath * 0.08, 0, 1);
-      const haloRadius =
-        descriptor.halo *
-        (isPhoneViewport ? 1.12 : isCompactViewport ? 0.9 : 1) *
-        (1 + boost * 0.18);
-      const coreRadius =
-        descriptor.core *
-        (isPhoneViewport ? 1.08 : isCompactViewport ? 0.94 : 1) *
-        (1 + boost * 0.12);
-      const shadowRadius = haloRadius * 1.2;
-      const veilRadius = haloRadius * 0.98;
-
-      pulse.group.setAttribute(
-        "transform",
-        `translate(${point.x.toFixed(2)} ${point.y.toFixed(2)})`,
-      );
-      pulse.group.style.opacity = (
-        descriptor.pathType === "detail" ? 0.34 + boost * 0.2 : 0.5 + boost * 0.24
-      ).toFixed(3);
-      pulse.shadow.setAttribute("r", shadowRadius.toFixed(2));
-      pulse.veil.setAttribute("r", veilRadius.toFixed(2));
-      pulse.halo.setAttribute("r", haloRadius.toFixed(2));
-      pulse.core.setAttribute("r", coreRadius.toFixed(2));
-    });
+    return (entry) => entry.preProjectLength * prePauseProgress;
   };
 
   const renderCircuits = (revealY) => {
@@ -1291,65 +652,37 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     const lighting = getSectionLighting(focusY);
     const breath = getCircuitBreath() * lighting.breath;
     const waveBoost = clamp(lighting.boost * (0.58 + breath * 0.34) + breath * 0.06, 0, 1);
-    const hotRange = window.innerHeight * (isPhoneViewport ? 0.12 : isCompactViewport ? 0.14 : 0.18);
+    const hotRange = window.innerHeight * (isCompactViewport ? 0.14 : 0.18);
     const mainVisibleLengths = [];
-    const detailVisibleLengths = [];
+    const resolveVisibleLength = getVisibleLengthResolver(revealY);
 
-    circuitLayer.style.setProperty("--circuit-boost", waveBoost.toFixed(3));
-    circuitLayer.style.setProperty("--circuit-breath", breath.toFixed(3));
-    circuitLayer.style.setProperty("--circuit-zone-main", lighting.main.toFixed(3));
-    circuitLayer.style.setProperty("--circuit-zone-ghost", lighting.ghost.toFixed(3));
-    circuitLayer.style.setProperty("--circuit-zone-accent", lighting.accent.toFixed(3));
-    circuitLayer.style.setProperty("--circuit-zone-detail", lighting.detail.toFixed(3));
-    circuitLayer.style.setProperty("--circuit-zone-node", lighting.node.toFixed(3));
+    setLayerValue("--circuit-boost", waveBoost.toFixed(3));
+    setLayerValue("--circuit-breath", breath.toFixed(3));
+    setLayerValue("--circuit-zone-main", lighting.main.toFixed(3));
+    setLayerValue("--circuit-zone-node", lighting.node.toFixed(3));
 
-    [...circuitNodes, ...circuitDetailNodes, ...circuitMicroNodes].forEach((node) => {
-      const nodeY = Number(node.getAttribute("cy"));
-      const isLit = revealY + 30 >= nodeY;
-      node.classList.toggle("is-lit", isLit);
-      node.classList.toggle("is-hot", isLit && Math.abs(nodeY - focusY) <= hotRange);
+    circuitNodeEntries.forEach((entry) => {
+      const isLit = revealY + 30 >= entry.y;
+      const isHot = isLit && Math.abs(entry.y - focusY) <= hotRange;
+
+      if (entry.lit !== isLit) {
+        entry.node.classList.toggle("is-lit", isLit);
+        entry.lit = isLit;
+      }
+
+      if (entry.hot !== isHot) {
+        entry.node.classList.toggle("is-hot", isHot);
+        entry.hot = isHot;
+      }
     });
 
-    [...circuitTracks, ...circuitLines].forEach((line, index) => {
-      const length = line.getTotalLength();
-      const visibleLength = getVisibleLength(
-        length,
-        preProjectLengths[index % 2] || 0,
-        revealY,
-      );
-      if (index < circuitLines.length) mainVisibleLengths[index] = visibleLength;
-      line.style.strokeDashoffset = length - visibleLength;
+    [...lineEntryGroups.tracks, ...lineEntryGroups.energy].forEach((entry, index) => {
+      const visibleLength = resolveVisibleLength(entry);
+      if (index >= lineEntryGroups.tracks.length) {
+        mainVisibleLengths[index - lineEntryGroups.tracks.length] = visibleLength;
+      }
+      setLineVisibleLength(entry, visibleLength);
     });
-
-    circuitGhostPaths.forEach((line, index) => {
-      const length = line.getTotalLength();
-      const visibleLength =
-        getVisibleLength(length, preProjectGhostLengths[index] || 0, revealY) * 0.88;
-      line.style.strokeDashoffset = length - visibleLength;
-    });
-
-    circuitAccentPaths.forEach((line, index) => {
-      const length = line.getTotalLength();
-      const visibleLength = getVisibleLength(
-        length,
-        preProjectAccentLengths[index] || 0,
-        revealY,
-      );
-      line.style.strokeDashoffset = length - visibleLength;
-    });
-
-    circuitDetailPaths.forEach((line, index) => {
-      const length = line.getTotalLength();
-      const visibleLength = getVisibleLength(
-        length,
-        preProjectDetailLengths[index] || 0,
-        revealY,
-      );
-      detailVisibleLengths[index] = visibleLength;
-      line.style.strokeDashoffset = length - visibleLength;
-    });
-
-    renderPulses(mainVisibleLengths, detailVisibleLengths, lighting.boost, breath, lighting);
   };
 
   const animateCircuits = (timestamp = 0) => {
@@ -1357,6 +690,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       animationFrameId = 0;
       return;
     }
+    animationTimeoutId = 0;
     animationFrameId = 0;
     if (!lastFrameTime) lastFrameTime = timestamp;
     const delta = timestamp - lastFrameTime;
@@ -1380,27 +714,23 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
 
     renderCircuits(currentRevealY);
 
-    if (
-      (hasStartedScroll && !reducedMotion.matches) ||
-      Math.abs(targetRevealY - currentRevealY) > 0.5
-    ) {
-      animationFrameId = requestAnimationFrame(animateCircuits);
+    const isSettled = Math.abs(targetRevealY - currentRevealY) <= 0.5;
+    const isAmbientActive = !reducedMotion.matches && timestamp < idleMotionUntil;
+
+    if (!isSettled || isAmbientActive) {
+      scheduleAnimation(isSettled ? 48 : 16);
     }
   };
 
   const requestDraw = () => {
     if (!isCircuitActive) return;
     targetRevealY = getTargetRevealY();
-    if (animationFrameId) return;
-    animationFrameId = requestAnimationFrame(animateCircuits);
+    scheduleAnimation();
   };
 
   const disableCircuits = () => {
     isCircuitActive = false;
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = 0;
-    }
+    clearScheduledAnimation();
     lastFrameTime = 0;
     currentRevealY = 0;
     targetRevealY = 0;
@@ -1416,6 +746,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     currentRevealY = 0;
     targetRevealY = getTargetRevealY();
     lastFrameTime = 0;
+    markCircuitActivity();
     renderCircuits(0);
     requestDraw();
   };
@@ -1436,6 +767,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     prepareLines();
     currentRevealY = clamp(currentRevealY, 0, documentHeight);
     lastFrameTime = 0;
+    markCircuitActivity();
     requestDraw();
   };
 
@@ -1446,6 +778,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     () => {
       hasStartedScroll = window.scrollY > 0;
       if (!isCircuitActive) return;
+      markCircuitActivity();
       requestDraw();
     },
     { passive: true },
@@ -1458,6 +791,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     if (!isCircuitActive) return;
     lastFrameTime = 0;
     targetRevealY = getTargetRevealY();
+    markCircuitActivity();
     requestDraw();
   });
   mobileCircuitMedia.addEventListener("change", () => {
@@ -1468,6 +802,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     if (!isCircuitActive) return;
     lastFrameTime = 0;
     if (document.hidden) return;
+    markCircuitActivity();
     requestDraw();
   });
 }

@@ -118,48 +118,9 @@
       >
         <defs>
           <filter id="circuitGlow" x="-120%" y="-120%" width="340%" height="340%">
-            <feGaussianBlur stdDeviation="2.4" result="blur" />
+            <feGaussianBlur stdDeviation="1.7" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter
-            id="circuitGhostGlow"
-            x="-160%"
-            y="-160%"
-            width="420%"
-            height="420%"
-          >
-            <feGaussianBlur stdDeviation="1.8" result="ghostBlur" />
-            <feMerge>
-              <feMergeNode in="ghostBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter
-            id="circuitPulseGlow"
-            x="-220%"
-            y="-220%"
-            width="540%"
-            height="540%"
-          >
-            <feGaussianBlur stdDeviation="6.8" result="pulseBlur" />
-            <feMerge>
-              <feMergeNode in="pulseBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter
-            id="circuitPulseShadowBlur"
-            x="-220%"
-            y="-220%"
-            width="540%"
-            height="540%"
-          >
-            <feGaussianBlur stdDeviation="4.6" result="shadowBlur" />
-            <feMerge>
-              <feMergeNode in="shadowBlur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
@@ -174,46 +135,16 @@
               in="SourceAlpha"
               dx="0"
               dy="0"
-              stdDeviation="0.95"
+              stdDeviation="0.78"
               flood-color="#6f8794"
-              flood-opacity="0.34"
+              flood-opacity="0.26"
               result="nodeShadow"
-            />
-            <feDropShadow
-              in="SourceAlpha"
-              dx="0"
-              dy="0"
-              stdDeviation="2.1"
-              flood-color="#edfaff"
-              flood-opacity="0.28"
-              result="nodeVeil"
             />
             <feMerge>
               <feMergeNode in="nodeShadow" />
-              <feMergeNode in="nodeVeil" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <radialGradient id="circuitPulseShadow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#6f8794" stop-opacity="0.34" />
-            <stop offset="58%" stop-color="#7d99a6" stop-opacity="0.18" />
-            <stop offset="100%" stop-color="#7d99a6" stop-opacity="0" />
-          </radialGradient>
-          <radialGradient id="circuitPulseVeil" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#effcff" stop-opacity="0.28" />
-            <stop offset="56%" stop-color="#c9f3fb" stop-opacity="0.16" />
-            <stop offset="100%" stop-color="#c9f3fb" stop-opacity="0" />
-          </radialGradient>
-          <radialGradient id="circuitPulseHalo" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#f8feff" stop-opacity="0.96" />
-            <stop offset="48%" stop-color="#d9f8ff" stop-opacity="0.72" />
-            <stop offset="100%" stop-color="#9be7f6" stop-opacity="0" />
-          </radialGradient>
-          <radialGradient id="circuitPulseCore" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-            <stop offset="62%" stop-color="#e6fbff" stop-opacity="0.9" />
-            <stop offset="100%" stop-color="#8fdfee" stop-opacity="0.14" />
-          </radialGradient>
           <linearGradient id="circuitTrackGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stop-color="#92a3ae" stop-opacity="0.95" />
             <stop offset="14%" stop-color="#8fbecb" stop-opacity="0.98" />
@@ -227,27 +158,6 @@
             <stop offset="50%" stop-color="#fbfeff" stop-opacity="1" />
             <stop offset="82%" stop-color="#9de0ec" stop-opacity="0.98" />
             <stop offset="100%" stop-color="#a5b9c3" stop-opacity="0.96" />
-          </linearGradient>
-          <linearGradient id="circuitAccentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#b6c4cc" stop-opacity="0.94" />
-            <stop offset="22%" stop-color="#ddf8fd" stop-opacity="0.98" />
-            <stop offset="50%" stop-color="#ffffff" stop-opacity="1" />
-            <stop offset="78%" stop-color="#ddf8fd" stop-opacity="0.98" />
-            <stop offset="100%" stop-color="#b6c4cc" stop-opacity="0.94" />
-          </linearGradient>
-          <linearGradient id="circuitDetailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#a9b9c3" stop-opacity="0.92" />
-            <stop offset="20%" stop-color="#a9e3ef" stop-opacity="0.98" />
-            <stop offset="50%" stop-color="#ecfcff" stop-opacity="1" />
-            <stop offset="80%" stop-color="#a9e3ef" stop-opacity="0.98" />
-            <stop offset="100%" stop-color="#a9b9c3" stop-opacity="0.92" />
-          </linearGradient>
-          <linearGradient id="circuitGhostGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#9aaab3" stop-opacity="0.82" />
-            <stop offset="26%" stop-color="#cfeef6" stop-opacity="0.94" />
-            <stop offset="50%" stop-color="#f5fdff" stop-opacity="0.98" />
-            <stop offset="74%" stop-color="#cfeef6" stop-opacity="0.94" />
-            <stop offset="100%" stop-color="#9aaab3" stop-opacity="0.82" />
           </linearGradient>
         </defs>
 
@@ -615,7 +525,7 @@
       <div class="projects-grid">
         <article class="project-card">
           <div class="project-media">
-            <img src="img/nuance.png" alt="Image du projet Nuance" />
+            <img src="img/nuance-.png" alt="Image du projet Nuance" />
           </div>
 
           <div class="project-info">
@@ -879,7 +789,6 @@
         <div class="footer-cta">
           <h3>Parlons projet</h3>
           <p>Un besoin, une idée, un prototype à lancer ?</p>
-          <a class="btn" href="mailto:leclere359@gmail.com">Me contacter</a>
         </div>
       </div>
 
@@ -892,7 +801,6 @@
       </div>
     </footer>
 
-    <!--  <canvas id="liquid-canvas"></canvas>-->
     <canvas id="liquid-canvas"></canvas>
 
     <script
@@ -908,7 +816,6 @@
       src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script defer src="js/script.js?v=20260520c"></script>
     <script defer src="js/main.js?v=20260520c"></script>
     <script defer src="js/animations.js?v=20260520c"></script>
     <script defer src="js/stats.js?v=20260520c"></script>
