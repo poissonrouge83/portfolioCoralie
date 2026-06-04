@@ -190,3 +190,62 @@ if (ufoCompanion && window.gsap) {
     ufoCompanion.style.opacity = "0";
   }
 }
+
+// Zoom desktop sur les images de la section projets
+const projectMediaItems = document.querySelectorAll(".projects-grid .project-media");
+const projectLightboxMedia = window.matchMedia("(min-width: 901px)");
+
+if (projectMediaItems.length) {
+  const projectLightbox = document.createElement("div");
+  projectLightbox.className = "project-lightbox";
+  projectLightbox.setAttribute("aria-hidden", "true");
+  projectLightbox.innerHTML = `
+    <div class="project-lightbox-shell">
+      <img class="project-lightbox-image" alt="" />
+    </div>
+  `;
+  document.body.appendChild(projectLightbox);
+
+  const projectLightboxImage = projectLightbox.querySelector(".project-lightbox-image");
+
+  const closeProjectLightbox = () => {
+    projectLightbox.classList.remove("is-visible");
+    projectLightbox.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("project-lightbox-open");
+    projectLightboxImage.removeAttribute("src");
+    projectLightboxImage.alt = "";
+  };
+
+  const openProjectLightbox = (image) => {
+    if (!projectLightboxMedia.matches) return;
+
+    projectLightboxImage.src = image.currentSrc || image.src;
+    projectLightboxImage.alt = image.alt || "Aperçu du projet";
+    projectLightbox.classList.add("is-visible");
+    projectLightbox.setAttribute("aria-hidden", "false");
+    document.body.classList.add("project-lightbox-open");
+  };
+
+  projectMediaItems.forEach((media) => {
+    const image = media.querySelector("img");
+    if (!image) return;
+
+    media.addEventListener("click", (event) => {
+      if (!projectLightboxMedia.matches) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      openProjectLightbox(image);
+    });
+  });
+
+  projectLightbox.addEventListener("click", closeProjectLightbox);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeProjectLightbox();
+  });
+
+  projectLightboxMedia.addEventListener("change", (event) => {
+    if (!event.matches) closeProjectLightbox();
+  });
+}

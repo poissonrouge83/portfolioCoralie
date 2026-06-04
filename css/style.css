@@ -909,6 +909,7 @@ button:focus-visible {
   );
   opacity: 0.9;
   transition: opacity 0.35s ease;
+  pointer-events: none;
 }
 
 .project-card img {
@@ -918,6 +919,16 @@ button:focus-visible {
   filter: saturate(1.1) contrast(1.05);
   transform: scale(1.02);
   transition: transform 0.5s ease;
+}
+
+@media (min-width: 901px) {
+  .project-media {
+    cursor: zoom-in;
+  }
+
+  .project-media img {
+    cursor: inherit;
+  }
 }
 
 .project-card:hover {
@@ -977,6 +988,48 @@ button:focus-visible {
   background: rgba(170, 241, 255, 0.12);
   border: 1px solid rgba(170, 241, 255, 0.3);
   color: rgba(226, 232, 240, 0.9);
+}
+
+.project-lightbox {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 6vw;
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 1200;
+}
+
+.project-lightbox.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.project-lightbox-shell {
+  width: min(1120px, 88vw);
+  max-height: 84vh;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(170, 241, 255, 0.28);
+  background: rgba(15, 23, 42, 0.92);
+  box-shadow: 0 30px 80px rgba(2, 6, 23, 0.48);
+}
+
+.project-lightbox-image {
+  display: block;
+  width: 100%;
+  max-height: 84vh;
+  object-fit: contain;
+  background: rgba(15, 23, 42, 0.96);
+}
+
+body.project-lightbox-open {
+  overflow: hidden;
 }
 
 /* ===================================================== */
@@ -1160,6 +1213,12 @@ button:focus-visible {
 
   .memory-note > p + p {
     margin-top: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .project-lightbox {
+    display: none !important;
   }
 }
 
