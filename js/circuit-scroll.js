@@ -8,6 +8,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const mobileCircuitMedia = window.matchMedia("(max-width: 768px)");
   const svgNamespace = "http://www.w3.org/2000/svg";
+  // Etat global du circuit: geometrie, progression du tracé et petite inertie visuelle.
   let documentHeight = 0;
   let exchangeBoostZones = [];
   let circuitSectionProfiles = [];
@@ -50,6 +51,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     return progress * progress * (3 - 2 * progress);
   };
 
+  // Repere le "milieu visuel" entre deux sections pour faire traverser le circuit a cet endroit.
   const getGapCenter = (firstSelector, secondSelector, fallbackRatio) => {
     const first = document.querySelector(firstSelector);
     const second = document.querySelector(secondSelector);
@@ -123,6 +125,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     layerValueCache[name] = value;
   };
 
+  // On met en cache les longueurs SVG une seule fois pour eviter de les recalculer a chaque frame.
   const createLineEntries = (elements, preProjectLengths) =>
     elements.map((line, index) => {
       const length = line.getTotalLength();
@@ -183,6 +186,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     }, delay);
   };
 
+  // Chaque section donne une "ambiance" au circuit: plus ou moins lumineux selon la zone.
   const collectSectionProfiles = () =>
     [
       {
@@ -291,6 +295,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       ? 0
       : (Math.sin(circuitPulseClock * (isCompactViewport ? 0.0019 : 0.00145)) + 1) / 2;
 
+  // Construit un seul grand chemin lateral avec des decroches et des traversées entre sections.
   const buildSidePath = ({
     x,
     targetX,
@@ -551,6 +556,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
       measurePathLength(rightPath.preProjectPath),
     ];
 
+    // Ici on injecte le chemin final dans le SVG et on replace les noeuds lumineux dessus.
     circuitLayer.style.height = `${documentHeight}px`;
     circuitSvg.setAttribute("viewBox", `0 0 ${width} ${documentHeight}`);
     circuitTracks[0].setAttribute("d", leftPath.fullPath);
@@ -623,6 +629,8 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     return clamp(baseProgress + exchangeBoost, 0, 1);
   };
 
+  // Traduit la position du scroll en longueur visible sur le circuit.
+  // Une fois la zone "skills" atteinte, on fige le tracé avant les animations du bas.
   const getVisibleLengthResolver = (revealY) => {
     if (reducedMotion.matches || revealY >= documentHeight) {
       return (entry) => entry.length;
@@ -661,6 +669,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     setLayerValue("--circuit-zone-main", lighting.main.toFixed(3));
     setLayerValue("--circuit-zone-node", lighting.node.toFixed(3));
 
+    // Les noeuds s'allument quand le tracé les atteint, puis deviennent "chauds" pres du centre ecran.
     circuitNodeEntries.forEach((entry) => {
       const isLit = revealY + 30 >= entry.y;
       const isHot = isLit && Math.abs(entry.y - focusY) <= hotRange;
@@ -685,6 +694,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     });
   };
 
+  // Boucle principale: on rapproche doucement le circuit de la position cible au lieu de coller brut au scroll.
   const animateCircuits = (timestamp = 0) => {
     if (!isCircuitActive) {
       animationFrameId = 0;
@@ -717,6 +727,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
     const isSettled = Math.abs(targetRevealY - currentRevealY) <= 0.5;
     const isAmbientActive = !reducedMotion.matches && timestamp < idleMotionUntil;
 
+    // Quand tout est stable, on ralentit la boucle; sinon on garde une cadence plus reactive.
     if (!isSettled || isAmbientActive) {
       scheduleAnimation(isSettled ? 48 : 16);
     }
@@ -752,6 +763,7 @@ if (circuitLines.length && circuitTracks.length && circuitLayer && circuitSvg) {
   };
 
   const syncCircuitMode = () => {
+    // Sur mobile, le circuit reste desactive pour preserver la fluidite du scroll.
     if (mobileCircuitMedia.matches) {
       disableCircuits();
       return;
