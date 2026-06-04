@@ -9,8 +9,8 @@ if (gallery) {
     "img/ko.png",
     "img/nuance.png",
     "img/mendel.png",
-    "img/lumen.png",
     "img/mockup.png",
+    "img/mock-ux-figma.png",
   ];
 
   let matchedPairs = 0;
